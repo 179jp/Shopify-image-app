@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 import { Icon } from "@shopify/polaris";
 import { AppsIcon, CollectionIcon, FlagIcon } from "@shopify/polaris-icons";
 
@@ -197,9 +198,13 @@ const ProductUnitWrap = ({ children }) => {
   return <div style={productUnitWrapStyle}>{children}</div>;
 };
 
-export const ImageDetailPage = ({ file, collections }) => {
+export const ImageDetailPage = ({ file, collections, tags }) => {
   const [selected, setSelected] = useState("today");
   const handleSelectChange = useCallback((value) => setSelected(value), []);
+
+  // DB から取得する内容
+  const [image, setImage] = useState(null);
+  const [imageTags, setImageTags] = useState([]);
 
   // 編集中のプロダクトを設定する
   const [editProduct, setEditProduct] = useState(null);
@@ -231,17 +236,6 @@ export const ImageDetailPage = ({ file, collections }) => {
         y: 60,
       },
     },
-  ];
-
-  const tags = [
-    { id: "aaaaa", title: "Tag A" },
-    { id: "bbbbb", title: "Tag B" },
-    { id: "ccccc", title: "Tag C" },
-    { id: "ddddd", title: "Tag D" },
-    { id: "eeeee", title: "Tag E" },
-    { id: "fffff", title: "Tag F" },
-    { id: "ggggg", title: "Tag G" },
-    { id: "hhhhh", title: "Tag H" },
   ];
 
   const productUnits = products.map((product, index) => {
@@ -313,8 +307,6 @@ export const ImageDetailPage = ({ file, collections }) => {
     objectFit: "cover",
     borderRadius: "10px",
   };
-
-  console.log("collections", collections);
 
   return (
     <div id="imageDetail" style={pageDetailStyle}>

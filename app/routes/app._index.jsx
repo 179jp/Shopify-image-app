@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 import { json } from "@remix-run/node";
 import { useFetcher } from "@remix-run/react";
 import {
@@ -19,6 +20,8 @@ import { authenticate } from "../shopify.server";
 
 import { ImagesCards } from "../components/ImageCards";
 import { ImageDetailPage } from "../components/ImageDetailPage";
+
+import prisma from "../db.server";
 
 import "../components/default.css";
 
@@ -70,9 +73,13 @@ export const loader = async ({ request }) => {
     },
   } = await collectionResponse.json();
 
+  // DB から images を取得
+  // const images = await prisma.image.findMany();
+  const images = await prisma.Image.findMany();
+
   return json({
     files: nodes,
-    collections,
+    images,
   });
 };
 
@@ -152,7 +159,7 @@ export default function Index() {
     "",
   );
 
-  const { files, collections } = useLoaderData();
+  const { files, collections, images } = useLoaderData();
 
   const [selectedFile, setSelectedFile] = useState(null);
   const handleSelection = useCallback((file) => {
@@ -170,8 +177,11 @@ export default function Index() {
     } else {
       ext = ext.toUpperCase();
     }
+    // images にデータがあれば、それをセットする
+    const imageData = images.find((image) => image.fileId === file.id);
     file.ext = ext;
     file.name = name;
+    file.imageData = imageData;
     setSelectedFile(file);
   });
 
@@ -184,57 +194,14 @@ export default function Index() {
   }, [productId, shopify]);
   const generateProduct = () => fetcher.submit({}, { method: "POST" });
 
-  if (isDetailPage) {
-    const { name, ext, image } = selectedFile;
-    return (
-      <Page
-        backAction={{ content: "Products", url: "#" }}
-        fullWidth
-        title={`${name}.${ext}`}
-        subtitle={`${image.width}×${image.height}`}
-        compactTitle
-        primaryAction={{ content: "Save", disabled: true }}
-        secondaryActions={[
-          {
-            content: "Duplicate",
-            accessibilityLabel: "Secondary action label",
-            onAction: () => alert("Duplicate action"),
-          },
-          {
-            content: "View on your store",
-            onAction: () => alert("View on your store action"),
-          },
-        ]}
-        actionGroups={[
-          {
-            title: "Promote",
-            actions: [
-              {
-                content: "Share on Facebook",
-                accessibilityLabel: "Individual action label",
-                onAction: () => alert("Share on Facebook action"),
-              },
-            ],
-          },
-        ]}
-        pagination={{
-          hasPrevious: true,
-          hasNext: true,
-        }}
-      >
-        <ImageDetailPage file={selectedFile} collections={collections} />
-      </Page>
-    );
-  } else {
-    return (
-      <Page
-        fullWidth
-        title="Image Handle App"
-        subtitle="ファイルに登録されている内容が表示されます"
-        compactTitle
-      >
-        <ImagesCards files={files} handleSelection={handleSelection} />
-      </Page>
-    );
-  }
+  return (
+    <Page
+      fullWidth
+      title="Image Handle App"
+      subtitle="ファイルに登録されている内容が表示されます"
+      compactTitle
+    >
+      <ImagesCards files={files} handleSelection={handleSelection} />
+    </Page>
+  );
 }

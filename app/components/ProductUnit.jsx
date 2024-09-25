@@ -136,7 +136,7 @@ export const ProductUnit = ({ product, num, isEdit, editPosition }) => {
             </PositionSettings>
           </li>
         </ul>
-        <p>
+        <div>
           {isEdit ? (
             <SaveButton>保存</SaveButton>
           ) : (
@@ -149,7 +149,7 @@ export const ProductUnit = ({ product, num, isEdit, editPosition }) => {
               </button>
             </p>
           )}
-        </p>
+        </div>
       </dd>
     </Product>
   );

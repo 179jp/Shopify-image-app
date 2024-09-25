@@ -60,7 +60,7 @@ export const CheckBoxUnit = ({ items, selected, type, onChange }) => {
                   checked={selected.includes(item.id)}
                   onChange={() => onChange(item.id)}
                 />
-                {item.title}
+                {type === "tags" ? item.name : item.title}
                 {type === "collections" && `(${item.products.nodes.length})`}
               </Label>
             </li>

@@ -12,6 +12,8 @@ const unitTitleStyle = {
   marginBottom: "16px",
 };
 
+import "./imageDetailPage.css";
+
 export const UnitTitle = ({ title, icon }) => {
   return (
     <div className="unit-title">

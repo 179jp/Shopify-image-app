@@ -1,4 +1,5 @@
 import { boxShadowLv2 } from "../components-syled/config";
+import { Link } from "@remix-run/react";
 
 const pageWrapStyle = {
   backgroundColor: "rgb(248, 248,248)",
@@ -20,13 +21,16 @@ export const ImagesCards = ({ files, handleSelection }) => {
   const cards = files
     .filter((file) => file.image && file.image.originalSrc)
     .map((file) => {
+      const encodedId = encodeURIComponent(file.id);
       return (
-        <div key={file.id} onClick={() => handleSelection(file)}>
-          <img
-            src={file.image.originalSrc}
-            alt={file.id}
-            style={cardImgStyle}
-          />
+        <div key={file.id}>
+          <Link to={`/app/image/${encodedId}`}>
+            <img
+              src={file.image.originalSrc}
+              alt={file.id}
+              style={cardImgStyle}
+            />
+          </Link>
         </div>
       );
     });

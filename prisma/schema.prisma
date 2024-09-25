@@ -33,7 +33,7 @@ model Session {
 
 model Image {
   id            String    @id @default(uuid())
-  fileId        String    
+  fileId        String    @unique
   title         String?
   alt           String?
   collections   Collection[] @relation()
