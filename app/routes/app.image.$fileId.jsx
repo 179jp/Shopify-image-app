@@ -59,6 +59,22 @@ export const loader = async ({ request, params }) => {
     },
   } = await fileResponse.json();
 
+  // 商品情報を取得する
+  const productResponse = await admin.graphql(`
+    {
+      products(first: 50) {
+        nodes {
+          id
+          title
+        }
+      }
+    }`);
+  const {
+    data: {
+      products: { nodes: products },
+    },
+  } = await productResponse.json();
+
   // コレクションを取得する
   const collectionResponse = await admin.graphql(`
     {
@@ -89,13 +105,13 @@ export const loader = async ({ request, params }) => {
     },
   });
   const tags = await prisma.tag.findMany();
-  return { collections, file, image, tags };
+  return { collections, file, image, products, tags };
 };
 
 export const action = async ({ request }) => {};
 
 export default function Image() {
-  const { collections, file, image, tags } = useLoaderData();
+  const { collections, file, image, products, tags } = useLoaderData();
 
   // 画像URLからファイル名と拡張子を取得する
   const fileName = file.image.originalSrc.split("/").pop();
@@ -144,7 +160,12 @@ export default function Image() {
         hasNext: true,
       }}
     >
-      <ImageDetailPage file={file} collections={collections} tags={tags} />
+      <ImageDetailPage
+        file={file}
+        collections={collections}
+        products={products}
+        tags={tags}
+      />
     </Page>
   );
 }

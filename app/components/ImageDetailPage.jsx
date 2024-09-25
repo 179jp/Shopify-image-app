@@ -198,7 +198,7 @@ const ProductUnitWrap = ({ children }) => {
   return <div style={productUnitWrapStyle}>{children}</div>;
 };
 
-export const ImageDetailPage = ({ file, collections, tags }) => {
+export const ImageDetailPage = ({ file, collections, tags, products }) => {
   const [selected, setSelected] = useState("today");
   const handleSelectChange = useCallback((value) => setSelected(value), []);
 
@@ -219,7 +219,7 @@ export const ImageDetailPage = ({ file, collections, tags }) => {
     setEditPosition(position);
   }, []);
 
-  const products = [
+  const productsOnImage = [
     {
       id: "aaaaa",
       name: "Product A",
@@ -238,7 +238,7 @@ export const ImageDetailPage = ({ file, collections, tags }) => {
     },
   ];
 
-  const productUnits = products.map((product, index) => {
+  const productUnits = productsOnImage.map((product, index) => {
     return (
       <ProductUnit
         key={product.id}
@@ -250,7 +250,7 @@ export const ImageDetailPage = ({ file, collections, tags }) => {
     );
   });
 
-  const productLabels = products.map((product, index) => {
+  const productLabels = productsOnImage.map((product, index) => {
     const isEdit = editProduct === product.id;
     const style = {
       top: isEdit ? `${editPosition.y}%` : `${product.position.y}%`,
@@ -336,6 +336,14 @@ export const ImageDetailPage = ({ file, collections, tags }) => {
           </div>
           <div>
             <UnitTitle title="おすすめ商品" icon={CollectionIcon} />
+            <div>
+              <CheckBoxUnit
+                items={products}
+                selected={[]}
+                type="products"
+                onChange={() => {}}
+              />
+            </div>
           </div>
         </div>
       </div>
