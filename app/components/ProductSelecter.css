@@ -1,0 +1,37 @@
+.product-selecter-wrap {
+  position: relative;
+}
+
+.product-selecter-wrap > div {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 300px;
+  background-color: #fff;
+  border: 1px solid #eee;
+  border-radius: 0.75rem;
+  box-shadow: 0rem 0.125rem 0.25rem 0rem rgba(26, 26, 26, 0.07);
+}
+
+.product-selecter-wrap > div > p {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.product-selecter-wrap.showList > div {
+  display: block;
+}
+
+.selected-product {
+  align-items: center;
+  border: 1px solid #eee;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  gap: 4px;
+  padding: 8px 16px;
+}
