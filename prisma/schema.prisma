@@ -38,14 +38,21 @@ model Image {
   alt           String?
   collections   Collection[] @relation()
   tags          ImageTag[]
+  productsOnImage ProductOnImage[]
+  recommendProducts RecommendProduct[]
 
   @@index([fileId])
 }
 
 model Collection {
-  id      String  @id
-  name    String
-  images  Image[]  @relation()
+  collectionId String
+  imageId String
+  
+  @@id([collectionId, imageId])
+  @@index([collectionId])
+  @@index([imageId])
+
+  image Image @relation(fields: [imageId], references: [id])
 }
 
 model Tag {
@@ -66,3 +73,26 @@ model ImageTag {
   tag  Tag  @relation(fields: [tagId], references: [id])
 }
 
+model ProductOnImage {
+  id            String    @id @default(uuid())
+  imageId       String
+  productId     String
+  positionX     Float
+  positionY     Float
+
+  @@index([imageId])
+  @@index([productId])
+
+  image Image @relation(fields: [imageId], references: [id])
+}
+
+model RecommendProduct {
+  imageId       String
+  productId     String
+
+  @@id([imageId, productId])
+  @@index([imageId])
+  @@index([productId])
+
+  image Image @relation(fields: [imageId], references: [id])
+}
