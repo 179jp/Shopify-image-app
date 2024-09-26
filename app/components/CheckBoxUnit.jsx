@@ -57,8 +57,10 @@ export const CheckBoxUnit = ({ items, selected, type, onChange }) => {
               <Label>
                 <input
                   type="checkbox"
+                  name={`${type}`}
                   checked={selected.includes(item.id)}
                   onChange={() => onChange(item.id)}
+                  value={item.id}
                 />
                 {type === "tags" ? item.name : item.title}
                 {type === "collections" && `(${item.products.nodes.length})`}
