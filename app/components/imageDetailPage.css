@@ -1,3 +1,22 @@
 .Polaris-Icon {
   margin: 0 !important;
 }
+
+.popover {
+  background-color: var(--p-color-bg);
+  border-radius: 10px;
+  box-shadow: 0rem 0.15rem 0.5rem 0rem rgba(26, 26, 26, 0.14);
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  z-index: 1000;
+  width: 600px;
+  height: 70%;
+  padding: 0;
+  overflow: hidden;
+  display: none;
+}
+.popover.isShow {
+  display: block;
+}

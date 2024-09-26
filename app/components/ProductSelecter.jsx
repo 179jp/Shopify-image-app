@@ -5,7 +5,12 @@ import { CaretDownIcon, NoteIcon, SearchIcon } from "@shopify/polaris-icons";
 
 import "./ProductSelecter.css";
 
-export const ProductSelecter = ({ products, selected, onSelectChange }) => {
+export const ProductSelecter = ({
+  products,
+  selected,
+  onSelectChange,
+  handlePopover,
+}) => {
   const [showList, setShowList] = useState(false);
   const [search, setSearch] = useState("");
   const [filteredProducts, setfilteredProducts] = useState(products);
@@ -76,7 +81,7 @@ export const ProductSelecter = ({ products, selected, onSelectChange }) => {
           </ul>
         </div>
         <ButtonGroup className="productSelecterButtons">
-          <Button>キャンセル</Button>
+          <Button onClick={handlePopover}>キャンセル</Button>
           <Button variant="primary">決定</Button>
         </ButtonGroup>
       </div>

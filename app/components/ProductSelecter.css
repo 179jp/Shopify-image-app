@@ -1,13 +1,22 @@
 .productFilter {
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 10px 10px 0 0;
   display: flex;
   gap: 10px;
+  padding: 15px 10px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
 }
 
 .productsListWrapper {
   width: 600px;
-  height: 400px;
-  margin: 20px 0;
-  overflow-y: auto;
+  height: 100%;
+  max-height: calc(70vh - 100px);
+  margin: 52px 0;
+  overflow-y: scroll;
+  padding: 0 10px 52px;
 }
 .productsList {
   display: flex;
@@ -39,9 +48,16 @@
   transform: translate(-50%, -50%);
 }
 
-.productSelecterButtons {
+.productSelecterButtons,
+.popover .Polaris-ButtonGroup {
+  background-color: #fff;
+  border-radius: 0 0 10px 10px;
   display: flex;
   justify-content: flex-end;
   margin: 20px 0 0;
-  padding: 10px;
+  padding: 10px 10px 20px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
 }

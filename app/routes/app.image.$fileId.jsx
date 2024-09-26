@@ -7,6 +7,7 @@ import {
   BlockStack,
   Box,
   Button,
+  ButtonGroup,
   Card,
   Icon,
   InlineStack,
@@ -389,6 +390,22 @@ export default function Image() {
     [productSearch],
   );
 
+  // ポップオーバーまわりの処理
+  const [isProductPopover, setIsProductPopover] = useState(false);
+  const [productPopoverTarget, setProductPopoverTarget] =
+    useState("recommendProducts");
+  const [isAddTagPopover, setIsAddTagPopover] = useState(false);
+  const handlePopover = useCallback((type, target) => {
+    if (type === "tag") {
+      setIsProductPopover(false);
+      setIsAddTagPopover((prevIsAddTagPopover) => !prevIsAddTagPopover);
+    } else {
+      setIsAddTagPopover(false);
+      setIsProductPopover((prevIsProductPopover) => !prevIsProductPopover);
+      setProductPopoverTarget(target);
+    }
+  }, []);
+
   const productUnits = productsOnImage.map((product, index) => {
     return (
       <ProductUnit
@@ -408,7 +425,6 @@ export default function Image() {
       title={`${name}.${ext}`}
       subtitle={`${file.image.width}×${file.image.height}`}
       compactTitle
-      primaryAction={{ content: "Save", disabled: true }}
       pagination={{
         hasPrevious: true,
         hasNext: true,
@@ -433,7 +449,16 @@ export default function Image() {
                 <UnitTitle title="画像内の商品設定" icon={FlagIcon} />
                 <div style={productUnitWrapStyle}>{productUnits}</div>
                 <p style={addNewButtonStyle}>
-                  <Button icon={PlusIcon}>新規追加</Button>
+                  <Button
+                    icon={PlusIcon}
+                    onClick={handlePopover.bind(
+                      null,
+                      "product",
+                      "productOnImage",
+                    )}
+                  >
+                    新規追加
+                  </Button>
                 </p>
               </section>
               <section>
@@ -446,7 +471,16 @@ export default function Image() {
                     onChange={() => {}}
                   />
                   <p style={addNewButtonStyle}>
-                    <Button icon={PlusIcon}>新規追加</Button>
+                    <Button
+                      icon={PlusIcon}
+                      onClick={handlePopover.bind(
+                        null,
+                        "product",
+                        "recommendProducts",
+                      )}
+                    >
+                      新規追加
+                    </Button>
                   </p>
                 </div>
               </section>
@@ -490,7 +524,12 @@ export default function Image() {
               </dd>
               <dd>
                 <p style={addNewButtonStyle}>
-                  <Button icon={PlusIcon}>新規追加</Button>
+                  <Button
+                    icon={PlusIcon}
+                    onClick={handlePopover.bind(null, "tag", "tag")}
+                  >
+                    新規追加
+                  </Button>
                 </p>
               </dd>
             </dl>
@@ -500,17 +539,23 @@ export default function Image() {
           <Button variant="primary">保存する</Button>
         </div>
       </form>
-      <div className="popover">
+      <div className={`popover ${isAddTagPopover ? "isShow" : ""}`}>
         <form method="post">
           <input type="text" name="addTag" value={addTag} />
-          <button type="addTagSubmit">追加する</button>
+          <ButtonGroup className="productSelecterButtons">
+            <Button onClick={handlePopover.bind(null, "tag", "tag")}>
+              キャンセル
+            </Button>
+            <Button variant="primary">決定</Button>
+          </ButtonGroup>
         </form>
       </div>
-      <div className="popover">
+      <div className={`popover ${isProductPopover ? "isShow" : ""}`}>
         <ProductSelecter
           products={products}
           selected={[products[4].id]}
           onSelectChange={() => {}}
+          handlePopover={handlePopover.bind(null, "product", "product")}
         />
       </div>
     </Page>

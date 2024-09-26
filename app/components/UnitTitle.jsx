@@ -7,7 +7,7 @@ const unitTitleStyle = {
   flexDirection: "row",
   flexWrap: "nowrap",
   justifyContent: "flex-start",
-  fontSize: "1rem",
+  fontSize: ".8125rem",
   fontWeight: "bold",
   marginBottom: "16px",
 };
