@@ -1,37 +1,47 @@
-.product-selecter-wrap {
-  position: relative;
-}
-
-.product-selecter-wrap > div {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 300px;
-  background-color: #fff;
-  border: 1px solid #eee;
-  border-radius: 0.75rem;
-  box-shadow: 0rem 0.125rem 0.25rem 0rem rgba(26, 26, 26, 0.07);
-}
-
-.product-selecter-wrap > div > p {
+.productFilter {
   display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 16px;
-  cursor: pointer;
+  gap: 10px;
 }
 
-.product-selecter-wrap.showList > div {
-  display: block;
+.productsListWrapper {
+  width: 600px;
+  height: 400px;
+  margin: 20px 0;
+  overflow-y: auto;
 }
-
-.selected-product {
+.productsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.productList_item {
   align-items: center;
-  border: 1px solid #eee;
-  border-radius: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
   cursor: pointer;
   display: flex;
-  gap: 4px;
-  padding: 8px 16px;
+  gap: 10px;
+  padding: 5px;
+  transition: all 0.6s;
+}
+.productList_item:hover {
+  background-color: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s;
+}
+.productList_item.isSelected {
+  background-color: #111;
+  color: #fff;
+}
+
+.Polaris-Thumbnail > .Polaris-Icon {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.productSelecterButtons {
+  display: flex;
+  justify-content: flex-end;
+  margin: 20px 0 0;
+  padding: 10px;
 }

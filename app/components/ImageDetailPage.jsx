@@ -308,6 +308,12 @@ export const ImageDetailPage = ({ file, collections, tags, products }) => {
     borderRadius: "10px",
   };
 
+  const productSettingStyle = {
+    display: "flex",
+    flexDirection: "column",
+    gap: "40px",
+  };
+
   return (
     <div id="imageDetail" style={pageDetailStyle}>
       <div style={pageDetailMainStyle}>
@@ -329,7 +335,7 @@ export const ImageDetailPage = ({ file, collections, tags, products }) => {
         ) : (
           <p>画像が見つかりません</p>
         )}
-        <div>
+        <div style={productSettingStyle}>
           <div>
             <UnitTitle title="商品の設定" icon={FlagIcon} />
             <ProductUnitWrap>{productUnits}</ProductUnitWrap>
