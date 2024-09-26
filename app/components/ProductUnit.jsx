@@ -131,7 +131,7 @@ export const ProductUnit = ({ product, num, isEdit, editPosition }) => {
               <p>
                 {isEdit
                   ? `${editPosition.x}, ${editPosition.y}`
-                  : `${product.position.x}, ${product.position.y}`}
+                  : `${product.positionX}, ${product.positionY}`}
               </p>
             </PositionSettings>
           </li>
