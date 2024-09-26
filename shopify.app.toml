@@ -3,7 +3,7 @@
 client_id = "3966b17d28a83066354fdd3fab8fc727"
 name = "image-handle-app"
 handle = "image-handle-app"
-application_url = "https://income-occupation-tft-elliott.trycloudflare.com"
+application_url = "https://saturn-readily-file-anti.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_files,read_products,read_themes,write_files,write_products"
 
 [auth]
 redirect_urls = [
-  "https://income-occupation-tft-elliott.trycloudflare.com/auth/callback",
-  "https://income-occupation-tft-elliott.trycloudflare.com/auth/shopify/callback",
-  "https://income-occupation-tft-elliott.trycloudflare.com/api/auth/callback"
+  "https://saturn-readily-file-anti.trycloudflare.com/auth/callback",
+  "https://saturn-readily-file-anti.trycloudflare.com/auth/shopify/callback",
+  "https://saturn-readily-file-anti.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
