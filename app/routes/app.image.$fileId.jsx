@@ -1,28 +1,51 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Form, Link, useLoaderData } from "@remix-run/react";
+import { json } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 import axios from "axios";
 import {
-  Page,
-  Layout,
-  Text,
-  Card,
-  Button,
   BlockStack,
   Box,
-  List,
+  Button,
+  Card,
+  Icon,
   InlineStack,
+  Layout,
+  List,
+  Page,
+  Text,
 } from "@shopify/polaris";
+import {
+  AppsIcon,
+  CollectionIcon,
+  FlagIcon,
+  PlusIcon,
+} from "@shopify/polaris-icons";
 
 import { UnitTitle } from "../components/UnitTitle";
 import { ProductUnit } from "../components/ProductUnit";
 import { CheckBoxUnit } from "../components/CheckBoxUnit";
 import { ImageDetailPage } from "../components/ImageDetailPage";
+import { ProductImage } from "../components/ProductImage";
+import { ProductSelecter } from "../components/ProductSelecter";
 
 import prisma from "../db.server";
 
 import "../components/default.css";
 import "../components/imageDetailPage.css";
+
+import {
+  addNewButtonStyle,
+  buttonAreaStyle,
+  pageDetailStyle,
+  pageDetailMainStyle,
+  productSettingStyle,
+  productUnitWrapStyle,
+  subColumnStyle,
+  subColumnUnitStyle,
+  subColumnUnitDtStyle,
+  polarisIconStyle,
+} from "../components/imageDetailStyle.js";
 
 export const loader = async ({ request, params }) => {
   const { admin } = await authenticate.admin(request);
@@ -66,6 +89,16 @@ export const loader = async ({ request, params }) => {
         nodes {
           id
           title
+          images(first: 1) {
+            edges {
+              node {
+                originalSrc
+                altText
+                width
+                height
+              }
+            }
+          }
         }
       }
     }`);
@@ -101,17 +134,228 @@ export const loader = async ({ request, params }) => {
   const image = await prisma.Image.findUnique({
     where: { fileId: fileId },
     include: {
+      collections: true,
       tags: true,
+      productsOnImage: true,
+      recommendProducts: true,
     },
   });
+  const productsOnImage = image.productsOnImage;
+  const recommendProducts = image.recommendProducts;
   const tags = await prisma.tag.findMany();
-  return { collections, file, image, products, tags };
+  return {
+    collections,
+    file,
+    image,
+    products,
+    productsOnImage,
+    recommendProducts,
+    tags,
+  };
 };
 
-export const action = async ({ request }) => {};
+// Image データの追加
+const insertImage = async (postData) => {
+  try {
+    await prisma.image.create({
+      data: {
+        fileId: postData.fileId,
+      },
+    });
+    // 追加に成功した場合、idを取得して返す
+    const image = await prisma.image.findUnique({
+      where: { fileId: postData.fileId },
+    });
+    return image.id;
+  } catch (error) {
+    console.error(error);
+    return false;
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+// recommendProductsの更新
+const updateRecommendProducts = async (postData) => {
+  const { imageId, recommendProducts } = postData;
+
+  try {
+    // 既存の recommendProducts を削除
+    await prisma.recommendProduct.deleteMany({
+      where: { imageId: imageId },
+    });
+    // 新しい recommendProducts を追加
+    await prisma.recommendProduct.createMany({
+      data: recommendProducts.map((product) => {
+        return {
+          imageId: imageId,
+          productId: product,
+        };
+      }),
+    });
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+const updateCollections = async (postData) => {
+  const { imageId, collections } = postData;
+
+  try {
+    // 既存の recommendProducts を削除
+    await prisma.collection.deleteMany({
+      where: { imageId: imageId },
+    });
+    // 新しい recommendProducts を追加
+    await prisma.collection.createMany({
+      data: collections.map((id) => {
+        return {
+          imageId: imageId,
+          collectionId: id,
+        };
+      }),
+    });
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+const updateTags = async (postData) => {
+  const { imageId, tags } = postData;
+
+  try {
+    // 既存の recommendProducts を削除
+    await prisma.ImageTag.deleteMany({
+      where: { imageId: imageId },
+    });
+    // 新しい recommendProducts を追加
+    await prisma.ImageTag.createMany({
+      data: tags.map((id) => {
+        return {
+          imageId: imageId,
+          tagId: id,
+        };
+      }),
+    });
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+// タグを追加する
+const addTag = async (postData) => {
+  const { addTag } = postData;
+
+  try {
+    await prisma.tag.create({
+      data: {
+        name: addTag,
+      },
+    });
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+export const action = async ({ request }) => {
+  console.log("action called", request);
+  const method = request.method;
+
+  switch (method) {
+    case "GET": {
+      const data = await getImage(request);
+      return json(data);
+    }
+    case "POST": {
+      let postData = await request.formData();
+      // postData = Object.getAll(postData);
+
+      // タグを追加する
+      if (postData.addTagSubmit) {
+        const result = await addTag(postData);
+        if (result) {
+          return json({
+            message: "タグを追加しました",
+          });
+        } else {
+          return json({
+            message: "タグの追加に失敗しました",
+          });
+        }
+      } else {
+        console.log("postData", postData);
+        const imageId = postData.get("imageId");
+        if (!imageId) {
+          // Image に追加する
+          const imageId = await insertImage({
+            imageId,
+            fileId: postData.get("fileId"),
+          });
+        }
+        // おすすめ商品を追加する
+        const recommendProducts = postData.getAll("recommendProducts");
+        if (recommendProducts) {
+          const result = await updateRecommendProducts({
+            imageId,
+            recommendProducts,
+          });
+        }
+        // コレクション
+        const collections = postData.getAll("collections");
+        if (collections) {
+          const result = await updateCollections({
+            imageId,
+            collections,
+          });
+        }
+        // タグ
+        const tags = postData.getAll("tags");
+        if (tags) {
+          const result = await updateTags({
+            imageId,
+            tags,
+          });
+        }
+        return json({
+          message: "Request to the homepage",
+        });
+      }
+    }
+    default: {
+      return json({
+        message: "Request to the homepage",
+      });
+    }
+  }
+};
 
 export default function Image() {
-  const { collections, file, image, products, tags } = useLoaderData();
+  const {
+    collections,
+    file,
+    image,
+    products,
+    productsOnImage,
+    recommendProducts,
+    tags,
+  } = useLoaderData();
 
   // 画像URLからファイル名と拡張子を取得する
   const fileName = file.image.originalSrc.split("/").pop();
@@ -119,53 +363,156 @@ export default function Image() {
   let ext = ext_string;
   // 拡張子に ? が含まれている場合、? 以降を除去する。同時に大文字に変換する
   if (ext.includes("?")) {
-    ext = ext.split("?")[0].toUpperCase();
-  } else {
-    ext = ext.toUpperCase();
+    ext = ext.split("?")[0];
   }
+
+  const [addTag, setAddTag] = useState(null);
+  const [selectedProducts, setSelectedProducts] = useState(recommendProducts);
+  // 編集中のプロダクトを設定する
+  const [editProduct, setEditProduct] = useState(null);
+  const handleEditProduct = useCallback((product) => {
+    setEditProduct(product.id);
+    setEditPosition(product.position);
+  }, []);
+  // 編集中のプロダクトの位置を設定する
+  const [editPosition, setEditPosition] = useState({ x: 0, y: 0 });
+  const handleEditPosition = useCallback((position) => {
+    setEditPosition(position);
+  }, []);
+
+  const [productSearch, setProductSearch] = useState("");
+  const handleProductSearch = useCallback(
+    (e) => {
+      console.log("handleSearch", e);
+      setProductSearch(e.target.value);
+    },
+    [productSearch],
+  );
+
+  const productUnits = productsOnImage.map((product, index) => {
+    return (
+      <ProductUnit
+        key={product.id}
+        isEdit={editProduct === product.id}
+        product={product}
+        editPosition={editPosition}
+        num={index + 1}
+      />
+    );
+  });
 
   return (
     <Page
-      backAction={{ content: "Products", url: "#" }}
+      backAction={{ content: "App", url: "/app" }}
       fullWidth
       title={`${name}.${ext}`}
       subtitle={`${file.image.width}×${file.image.height}`}
       compactTitle
       primaryAction={{ content: "Save", disabled: true }}
-      secondaryActions={[
-        {
-          content: "Duplicate",
-          accessibilityLabel: "Secondary action label",
-          onAction: () => alert("Duplicate action"),
-        },
-        {
-          content: "View on your store",
-          onAction: () => alert("View on your store action"),
-        },
-      ]}
-      actionGroups={[
-        {
-          title: "Promote",
-          actions: [
-            {
-              content: "Share on Facebook",
-              accessibilityLabel: "Individual action label",
-              onAction: () => alert("Share on Facebook action"),
-            },
-          ],
-        },
-      ]}
       pagination={{
         hasPrevious: true,
         hasNext: true,
       }}
     >
-      <ImageDetailPage
-        file={file}
-        collections={collections}
-        products={products}
-        tags={tags}
-      />
+      <form method="post">
+        <input type="hidden" name="imageId" value={image.id} />
+        <input type="hidden" name="fileId" value={file.id} />
+        <div id="imageDetail" style={pageDetailStyle}>
+          <div style={pageDetailMainStyle}>
+            <ProductImage
+              editProduct={editProduct}
+              editPosition={editPosition}
+              file={file}
+              handleEditProduct={handleEditProduct}
+              handleEditPosition={handleEditPosition}
+              onClick={[]}
+              productsOnImage={productsOnImage}
+            />
+            <div style={productSettingStyle}>
+              <section>
+                <UnitTitle title="画像内の商品設定" icon={FlagIcon} />
+                <div style={productUnitWrapStyle}>{productUnits}</div>
+                <p style={addNewButtonStyle}>
+                  <Button icon={PlusIcon}>新規追加</Button>
+                </p>
+              </section>
+              <section>
+                <UnitTitle title="おすすめ商品" icon={CollectionIcon} />
+                <div>
+                  <CheckBoxUnit
+                    items={products}
+                    selected={selectedProducts}
+                    type="recommendProducts"
+                    onChange={() => {}}
+                  />
+                  <p style={addNewButtonStyle}>
+                    <Button icon={PlusIcon}>新規追加</Button>
+                  </p>
+                </div>
+              </section>
+            </div>
+          </div>
+          <div style={subColumnStyle}>
+            <dl style={subColumnUnitStyle}>
+              <dt style={subColumnUnitDtStyle}>
+                <Icon
+                  source={CollectionIcon}
+                  tone="textInfo"
+                  style={polarisIconStyle}
+                />
+                コレクション
+              </dt>
+              <dd>
+                <CheckBoxUnit
+                  items={collections}
+                  selected={[]}
+                  type="collections"
+                  onChange={() => {}}
+                />
+              </dd>
+            </dl>
+            <dl style={subColumnUnitStyle}>
+              <dt style={subColumnUnitDtStyle}>
+                <Icon
+                  source={AppsIcon}
+                  tone="textInfo"
+                  style={polarisIconStyle}
+                />
+                タグ
+              </dt>
+              <dd>
+                <CheckBoxUnit
+                  items={tags}
+                  selected={[]}
+                  type="tags"
+                  onChange={() => {}}
+                />
+              </dd>
+              <dd>
+                <p style={addNewButtonStyle}>
+                  <Button icon={PlusIcon}>新規追加</Button>
+                </p>
+              </dd>
+            </dl>
+          </div>
+        </div>
+        <div style={buttonAreaStyle}>
+          <Button variant="primary">保存する</Button>
+        </div>
+      </form>
+      <div className="popover">
+        <form method="post">
+          <input type="text" name="addTag" value={addTag} />
+          <button type="addTagSubmit">追加する</button>
+        </form>
+      </div>
+      <div className="popover">
+        <ProductSelecter
+          products={products}
+          selected={[products[4].id]}
+          onSelectChange={() => {}}
+        />
+      </div>
     </Page>
   );
 }
