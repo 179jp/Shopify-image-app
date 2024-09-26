@@ -1,53 +1,84 @@
 import { useState, useCallback } from "react";
 
-import { Icon } from "@shopify/polaris";
-import { CaretDownIcon, SearchIcon } from "@shopify/polaris-icons";
+import { Button, ButtonGroup, Icon, Thumbnail } from "@shopify/polaris";
+import { CaretDownIcon, NoteIcon, SearchIcon } from "@shopify/polaris-icons";
 
 import "./ProductSelecter.css";
 
 export const ProductSelecter = ({ products, selected, onSelectChange }) => {
   const [showList, setShowList] = useState(false);
   const [search, setSearch] = useState("");
+  const [filteredProducts, setfilteredProducts] = useState(products);
+  const [selectedProducts, setSelectedProducts] = useState(selected);
 
   const handleShowList = useCallback(() => {
     console.log("handleShowList", showList);
     setShowList((prevShowList) => !prevShowList);
   }, [showList]);
 
-  const handleSearch = useCallback((e) => {
-    setSearch(e.target.value);
-  }, []);
+  const handleSelectedProducts = (product) => {
+    if (selectedProducts.includes(product)) {
+      setSelectedProducts(selectedProducts.filter((id) => id !== product.id));
+    } else {
+      setSelectedProducts([...selectedProducts, product.id]);
+    }
+  };
 
-  const filteredProducts =
-    search !== ""
-      ? products.filter((product) => {
-          return product.name.includes(search);
-        })
-      : products;
+  const handleProductSearch = useCallback(
+    (e) => {
+      console.log("handleProductSearch", e.target.value);
+      setSearch(e.target.value);
+      const filtered = products.filter((product) =>
+        product.title.toLowerCase().includes(e.target.value.toLowerCase()),
+      );
+      setfilteredProducts(filtered);
+    },
+    [filteredProducts],
+  );
 
   return (
-    <div className={`product-selecter-wrap ${showList ? "showList" : ""}`}>
+    <div className={`product-selecter-wrap showList`}>
       <p className="selected-product" onClick={handleShowList}>
         {selected.name}
-        <Icon source={CaretDownIcon} color="inkLighter" />
       </p>
       <div>
-        <div className="product-filter">
+        <div className="productFilter">
           <Icon source={SearchIcon} color="inkLighter" />
-          <input type="text" onChange={handleSearch} />
+          <input type="text" onChange={handleProductSearch} />
         </div>
-        <div className="product-list-wrapper">
-          <ul className="product-list">
+        <div className="productsListWrapper">
+          <ul className="productsList">
             {filteredProducts.map((product) => {
+              const img =
+                product.images.edges[0] && product.images.edges[0].node
+                  ? product.images.edges[0].node
+                  : null;
+              const productImg = img ? (
+                <Thumbnail
+                  source={img.originalSrc}
+                  size="large"
+                  alt={img.altText}
+                />
+              ) : (
+                <Thumbnail source={NoteIcon} size="large" alt="No Image" />
+              );
               return (
-                <li key={product.id}>
-                  <img src={product.img} alt={product.id} />
-                  {product.name}
+                <li
+                  className={`productList_item ${selectedProducts.includes(product.id) ? "isSelected" : ""}`}
+                  key={product.id}
+                  onClick={handleSelectedProducts.bind(null, product)}
+                >
+                  {productImg}
+                  <p>{product.title}</p>
                 </li>
               );
             })}
           </ul>
         </div>
+        <ButtonGroup className="productSelecterButtons">
+          <Button>キャンセル</Button>
+          <Button variant="primary">決定</Button>
+        </ButtonGroup>
       </div>
     </div>
   );
