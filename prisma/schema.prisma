@@ -40,6 +40,7 @@ model Image {
   tags          ImageTag[]
   productsOnImage ProductOnImage[]
   recommendProducts RecommendProduct[]
+  colors        ImageColor[]
 
   @@index([fileId])
 }
@@ -77,6 +78,7 @@ model ProductOnImage {
   id            String    @id @default(uuid())
   imageId       String
   productId     String
+  productTitle  String?
   positionX     Float
   positionY     Float
 
@@ -95,4 +97,23 @@ model RecommendProduct {
   @@index([productId])
 
   image Image @relation(fields: [imageId], references: [id])
+}
+
+model Color {
+  id    String  @id @default(uuid())
+  name  String  @unique
+  num   Int?
+  images ImageColor[]
+}
+
+model ImageColor {
+  imageId String
+  colorId  String
+
+  @@id([imageId, colorId])
+  @@index([imageId])
+  @@index([colorId])
+
+  image Image @relation(fields: [imageId], references: [id])
+  color Color @relation(fields: [colorId], references: [id])
 }
