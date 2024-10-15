@@ -1,23 +1,14 @@
 import React from "react";
-import { Icon } from "@shopify/polaris";
+import { Button, Icon } from "@shopify/polaris";
 import {
   PinIcon,
   PinFilledIcon,
   DeleteIcon,
   EditIcon,
+  PlusIcon,
 } from "@shopify/polaris-icons";
 
 import { ProductSelecter } from "./ProductSelecter";
-
-const products = [
-  {
-    id: 1,
-    name: "商品名1",
-    img: "https://cdn.shopify.com/s/files/1/0859/6278/5087/products/Main.jpg?v=1706755963",
-    position: { x: 10, y: 20 },
-  },
-  // 他の商品データも同様に追加
-];
 
 const Product = ({ children, isEdit }) => {
   const productStyle = {
@@ -104,21 +95,24 @@ const iconStyle = {
   margin: "0",
 };
 
-export const ProductUnit = ({ product, num, isEdit, editPosition }) => {
+export const ProductUnit = ({
+  product,
+  num,
+  isEdit,
+  editPosition,
+  handlePopover,
+}) => {
   return (
     <Product isEdit={isEdit}>
       <ProductLabel isEdit={isEdit}>{num}</ProductLabel>
       <dd style={ddStyle}>
         <ul>
           <li>
-            {isEdit ? (
-              <ProductSelecter
-                products={products}
-                selected={product}
-                onSelectChange={() => {}}
-              />
-            ) : (
-              product.name
+            {product.productTitle}
+            {isEdit && (
+              <Button icon={PlusIcon} onClick={handlePopover}>
+                商品の選択
+              </Button>
             )}
           </li>
           <li>
@@ -138,7 +132,7 @@ export const ProductUnit = ({ product, num, isEdit, editPosition }) => {
         </ul>
         <div>
           {isEdit ? (
-            <SaveButton>保存</SaveButton>
+            <SaveButton>完了</SaveButton>
           ) : (
             <p>
               <button>

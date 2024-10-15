@@ -1,3 +1,4 @@
+import { list } from "isbot";
 import React from "react";
 
 const Wrapper = ({ children }) => {
@@ -20,14 +21,19 @@ const listStyle = {
   flexDirection: "column",
 };
 
-const Label = ({ children }) => {
+const columnStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, 1fr)",
+};
+
+const Label = ({ isSmall, children }) => {
   const [hover, setHover] = React.useState(false);
 
   const labelStyle = {
     alignItems: "center",
     borderRadius: "8px",
     cursor: "pointer",
-    fontSize: ".8125rem",
+    fontSize: isSmall ? ".7rem" : ".8125rem",
     display: "flex",
     justifyContent: "flex-start",
     gap: "4px",
@@ -48,13 +54,14 @@ const Label = ({ children }) => {
 };
 
 export const CheckBoxUnit = ({ items, selected, type, onChange }) => {
+  const listClass = type === "colors" ? columnStyle : listStyle;
   return (
     <Wrapper>
-      <ul style={listStyle}>
+      <ul style={listClass}>
         {items.map((item) => {
           return (
             <li key={item.id}>
-              <Label>
+              <Label isSmall={type === "colors"}>
                 <input
                   type="checkbox"
                   name={`${type}`}
@@ -62,7 +69,7 @@ export const CheckBoxUnit = ({ items, selected, type, onChange }) => {
                   onChange={() => onChange(item.id)}
                   value={item.id}
                 />
-                {type === "tags" ? item.name : item.title}
+                {type === "tags" || type === "colors" ? item.name : item.title}
                 {type === "collections" && `(${item.products.nodes.length})`}
               </Label>
             </li>

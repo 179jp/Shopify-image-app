@@ -20,6 +20,7 @@ import {
   AppsIcon,
   CollectionIcon,
   FlagIcon,
+  HashtagDecimalIcon,
   PlusIcon,
 } from "@shopify/polaris-icons";
 
@@ -141,11 +142,16 @@ export const loader = async ({ request, params }) => {
       recommendProducts: true,
     },
   });
-  const productsOnImage = image.productsOnImage;
-  const recommendProducts = image.recommendProducts;
+  const productsOnImage =
+    image && image.productsOnImage ? image.productsOnImage : [];
+  const recommendProducts =
+    image && image.productsOnImage ? image.recommendProducts : [];
   const tags = await prisma.tag.findMany();
+  const colors = await prisma.color.findMany();
+
   return {
     collections,
+    colors,
     file,
     image,
     products,
@@ -276,7 +282,6 @@ const addTag = async (postData) => {
 };
 
 export const action = async ({ request }) => {
-  console.log("action called", request);
   const method = request.method;
 
   switch (method) {
@@ -350,6 +355,7 @@ export const action = async ({ request }) => {
 export default function Image() {
   const {
     collections,
+    colors,
     file,
     image,
     products,
@@ -367,56 +373,108 @@ export default function Image() {
     ext = ext.split("?")[0];
   }
 
-  const [addTag, setAddTag] = useState(null);
   const [selectedProducts, setSelectedProducts] = useState(recommendProducts);
+
+  // 画像内の商品
+  const [editProductOnImage, setEditProductOnImage] = useState(productsOnImage);
+
   // 編集中のプロダクトを設定する
   const [editProduct, setEditProduct] = useState(null);
-  const handleEditProduct = useCallback((product) => {
-    setEditProduct(product.id);
-    setEditPosition(product.position);
-  }, []);
-  // 編集中のプロダクトの位置を設定する
   const [editPosition, setEditPosition] = useState({ x: 0, y: 0 });
-  const handleEditPosition = useCallback((position) => {
-    setEditPosition(position);
-  }, []);
-
-  const [productSearch, setProductSearch] = useState("");
-  const handleProductSearch = useCallback(
-    (e) => {
-      console.log("handleSearch", e);
-      setProductSearch(e.target.value);
+  const handleEditProduct = useCallback(
+    (product) => {
+      console.log("product", product);
+      setEditProduct(product.id);
+      setEditPosition({
+        x: product.positionX ? product.positionX : 50,
+        y: product.positionY ? product.positionY : 50,
+      });
     },
-    [productSearch],
+    [editProduct, editPosition],
+  );
+  // 編集中のプロダクトの位置を設定する
+  const handleEditPosition = useCallback(
+    (position) => {
+      setEditPosition(position);
+    },
+    [editPosition],
   );
 
   // ポップオーバーまわりの処理
   const [isProductPopover, setIsProductPopover] = useState(false);
+  const [popoverSelectedProducts, setPopoverSelectedProducts] = useState([]);
   const [productPopoverTarget, setProductPopoverTarget] =
     useState("recommendProducts");
   const [isAddTagPopover, setIsAddTagPopover] = useState(false);
-  const handlePopover = useCallback((type, target) => {
-    if (type === "tag") {
-      setIsProductPopover(false);
-      setIsAddTagPopover((prevIsAddTagPopover) => !prevIsAddTagPopover);
-    } else {
-      setIsAddTagPopover(false);
-      setIsProductPopover((prevIsProductPopover) => !prevIsProductPopover);
-      setProductPopoverTarget(target);
-    }
-  }, []);
 
-  const productUnits = productsOnImage.map((product, index) => {
-    return (
-      <ProductUnit
-        key={product.id}
-        isEdit={editProduct === product.id}
-        product={product}
-        editPosition={editPosition}
-        num={index + 1}
-      />
-    );
-  });
+  const handlePopover = useCallback(
+    (type, target) => {
+      if (type === "tag") {
+        setIsProductPopover(false);
+        setIsAddTagPopover((prevIsAddTagPopover) => !prevIsAddTagPopover);
+      } else {
+        setIsAddTagPopover(false);
+        setIsProductPopover((prevIsProductPopover) => !prevIsProductPopover);
+        console.log("handlePopover", target);
+        setProductPopoverTarget(target);
+      }
+    },
+    [productPopoverTarget],
+  );
+
+  const handleProductSelectChange = useCallback(
+    (selected) => {
+      console.log("handleProductSelectChange", selected, productPopoverTarget);
+      if (productPopoverTarget === "recommendProducts") {
+        // setSelectedProducts(selected);
+      } else {
+        const flag = editProductOnImage.find(
+          (product) => product.id === selected.id,
+        );
+        console.log("handleProductSelectChange flag", flag);
+        if (!flag) {
+          console.log("handleProductSelectChange", selected);
+          const product = selected[0];
+          setEditProduct(product.id);
+          setEditProductOnImage([
+            ...editProductOnImage,
+            {
+              id: product.id,
+              productTitle: product.title,
+              positionX: 50,
+              positionY: 50,
+            },
+          ]);
+          setEditPosition({ x: 50, y: 50 });
+        }
+      }
+    },
+    [productPopoverTarget, editProduct, editProductOnImage, editPosition],
+  );
+
+  // タグ追加の処理
+  const [addTag, setAddTag] = useState(null);
+
+  const productUnits =
+    editProductOnImage && editProductOnImage.length > 0
+      ? editProductOnImage.map((product, index) => {
+          console.log("product", product);
+          return (
+            <ProductUnit
+              key={product.id}
+              isEdit={editProduct === product.id}
+              product={product}
+              editPosition={editPosition}
+              num={index + 1}
+              handlePopover={handlePopover.bind(
+                null,
+                "product",
+                "productOnImage",
+              )}
+            />
+          );
+        })
+      : null;
 
   return (
     <Page
@@ -431,7 +489,9 @@ export default function Image() {
       }}
     >
       <form method="post">
-        <input type="hidden" name="imageId" value={image.id} />
+        {image && image.id && (
+          <input type="hidden" name="imageId" value={image.id} />
+        )}
         <input type="hidden" name="fileId" value={file.id} />
         <div id="imageDetail" style={pageDetailStyle}>
           <div style={pageDetailMainStyle}>
@@ -442,7 +502,7 @@ export default function Image() {
               handleEditProduct={handleEditProduct}
               handleEditPosition={handleEditPosition}
               onClick={[]}
-              productsOnImage={productsOnImage}
+              productsOnImage={editProductOnImage}
             />
             <div style={productSettingStyle}>
               <section>
@@ -487,6 +547,24 @@ export default function Image() {
             </div>
           </div>
           <div style={subColumnStyle}>
+            <dl style={subColumnUnitStyle}>
+              <dt style={subColumnUnitDtStyle}>
+                <Icon
+                  source={HashtagDecimalIcon}
+                  tone="textInfo"
+                  style={polarisIconStyle}
+                />
+                色柄
+              </dt>
+              <dd>
+                <CheckBoxUnit
+                  items={colors}
+                  selected={[]}
+                  type="colors"
+                  onChange={() => {}}
+                />
+              </dd>
+            </dl>
             <dl style={subColumnUnitStyle}>
               <dt style={subColumnUnitDtStyle}>
                 <Icon
@@ -541,7 +619,7 @@ export default function Image() {
       </form>
       <div className={`popover ${isAddTagPopover ? "isShow" : ""}`}>
         <form method="post">
-          <input type="text" name="addTag" value={addTag} />
+          <input type="text" name="addTag" />
           <ButtonGroup className="productSelecterButtons">
             <Button onClick={handlePopover.bind(null, "tag", "tag")}>
               キャンセル
@@ -553,8 +631,8 @@ export default function Image() {
       <div className={`popover ${isProductPopover ? "isShow" : ""}`}>
         <ProductSelecter
           products={products}
-          selected={[products[4].id]}
-          onSelectChange={() => {}}
+          selected={popoverSelectedProducts}
+          onSelectChange={handleProductSelectChange}
           handlePopover={handlePopover.bind(null, "product", "product")}
         />
       </div>

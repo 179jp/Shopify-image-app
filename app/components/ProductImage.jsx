@@ -27,35 +27,50 @@ export const ProductImage = ({
   onClick,
   productsOnImage,
 }) => {
-  const productLabels = productsOnImage.map((product, index) => {
-    const isEdit = editProduct === product.id;
-    const style = {
-      top: isEdit ? `${editPosition.y}%` : `${product.positionY}%`,
-      left: isEdit ? `${editPosition.x}%` : `${product.positionX}%`,
-    };
-    return (
-      <span
-        className="productLabel"
-        key={product.id}
-        isEdit={isEdit}
-        style={style}
-        onClick={() => handleEditProduct(product)}
-      >
-        {index + 1}
-      </span>
-    );
-  });
+  const handleLabelClick = (product) => {
+    handleEditProduct(product);
+  };
+
+  const productLabels =
+    productsOnImage.length > 0
+      ? productsOnImage.map((product, index) => {
+          const isEdit = editProduct == product.id;
+          const style = {
+            top: isEdit ? `${editPosition.y}%` : `${product.positionY}%`,
+            left: isEdit ? `${editPosition.x}%` : `${product.positionX}%`,
+          };
+          return (
+            <span
+              className={`productLabel ${isEdit ? "isEdit" : ""}`}
+              key={product.id}
+              isEdit={isEdit}
+              style={style}
+              onClick={() => handleLabelClick(product)}
+            >
+              {index + 1}
+            </span>
+          );
+        })
+      : null;
+
+  const handleImageClick = (e) => {
+    const rect = e.target.getBoundingClientRect();
+    const x = Math.floor(((e.clientX - rect.left) / rect.width) * 1000) / 10;
+    const y = Math.floor(((e.clientY - rect.top) / rect.height) * 1000) / 10;
+    handleEditPosition({ x, y });
+  };
 
   return (
     <div style={style}>
       {file && file.image ? (
         <div>
-          <div style={style} onClick={onClick}>
+          <div style={style}>
             {productLabels}
             <img
               style={productImgStyle}
               src={file.image.originalSrc}
               alt={file.id}
+              onClick={(e) => handleImageClick(e)}
             />
           </div>
           <ul style={textSubStyle}>

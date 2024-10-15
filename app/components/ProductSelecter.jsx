@@ -41,6 +41,14 @@ export const ProductSelecter = ({
     [filteredProducts],
   );
 
+  const handleSubmit = useCallback(() => {
+    console.log("handleSubmit", selectedProducts);
+    onSelectChange(
+      products.filter((product) => selectedProducts.includes(product.id)),
+    );
+    handlePopover();
+  });
+
   return (
     <div className={`product-selecter-wrap showList`}>
       <p className="selected-product" onClick={handleShowList}>
@@ -82,7 +90,9 @@ export const ProductSelecter = ({
         </div>
         <ButtonGroup className="productSelecterButtons">
           <Button onClick={handlePopover}>キャンセル</Button>
-          <Button variant="primary">決定</Button>
+          <Button variant="primary" onClick={handleSubmit}>
+            決定
+          </Button>
         </ButtonGroup>
       </div>
     </div>

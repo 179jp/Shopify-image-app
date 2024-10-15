@@ -18,3 +18,7 @@
   color: #fff;
   transition: all 0.2s;
 }
+.productLabel.isEdit {
+  background-color: #111;
+  color: #fff;
+}
