@@ -3,7 +3,7 @@
 client_id = "3966b17d28a83066354fdd3fab8fc727"
 name = "image-handle-app"
 handle = "image-handle-app"
-application_url = "https://dumb-filme-ended-represents.trycloudflare.com"
+application_url = "https://shopify-image-app.netlify.app"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_files,read_products,read_themes,write_files,write_products"
 
 [auth]
 redirect_urls = [
-  "https://dumb-filme-ended-represents.trycloudflare.com/auth/callback",
-  "https://dumb-filme-ended-represents.trycloudflare.com/auth/shopify/callback",
-  "https://dumb-filme-ended-represents.trycloudflare.com/api/auth/callback"
+  "https://shopify-image-app.netlify.app/auth/callback",
+  "https://shopify-image-app.netlify.app/auth/shopify/callback",
+  "https://shopify-image-app.netlify.app/api/auth/callback"
 ]
 
 [webhooks]
