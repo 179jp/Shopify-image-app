@@ -3,7 +3,7 @@
 client_id = "3966b17d28a83066354fdd3fab8fc727"
 name = "image-handle-app"
 handle = "image-handle-app"
-application_url = "https://shopify-image-app.onrender.com"
+application_url = "https://promptly-soviet-anybody-clips.trycloudflare.com"
 embedded = true
 
 [build]
@@ -13,13 +13,13 @@ include_config_on_deploy = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_files,read_products,read_themes,write_files,write_products"
+scopes = "read_files,read_metaobject_definitions,read_metaobjects,read_products,read_themes,write_files,write_metaobject_definitions,write_metaobjects,write_products"
 
 [auth]
 redirect_urls = [
-  "https://shopify-image-app.onrender.com/auth/callback",
-  "https://shopify-image-app.onrender.com/auth/shopify/callback",
-  "https://shopify-image-app.onrender.com/api/auth/callback"
+  "https://promptly-soviet-anybody-clips.trycloudflare.com/auth/callback",
+  "https://promptly-soviet-anybody-clips.trycloudflare.com/auth/shopify/callback",
+  "https://promptly-soviet-anybody-clips.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
