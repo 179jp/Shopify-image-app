@@ -1,14 +1,10 @@
-import { boxShadowLv2 } from "../components-syled/config";
+import { boxShadowLv2 } from "../components-styled/config";
 import { Link } from "@remix-run/react";
 
 const pageWrapStyle = {
-  backgroundColor: "rgb(248, 248,248)",
-  boxShadow: boxShadowLv2,
-  borderRadius: ".75rem",
   display: "grid",
   gap: "20px",
   gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr",
-  padding: "20px",
 };
 const cardImgStyle = {
   width: "100%",

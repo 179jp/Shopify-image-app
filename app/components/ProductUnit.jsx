@@ -110,8 +110,8 @@ export const ProductUnit = ({
           <li>
             {product.productTitle}
             {isEdit && (
-              <Button icon={PlusIcon} onClick={handlePopover}>
-                商品の選択
+              <Button onClick={handlePopover} style="margin-left:0.5em;">
+                変更
               </Button>
             )}
           </li>

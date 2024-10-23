@@ -1,0 +1,20 @@
+.imageFilter {
+  border-bottom: 1px solid var(--p-color-border);
+  padding: 0 0 20px;
+  margin-bottom: 20px;
+}
+.imageFilter_params {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+}
+.imageFilter_params li {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+}
+.imageFilter_params input,
+.imageFilter_params select {
+  padding: 0.25em;
+}
