@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Form, Link, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useFetcher,
+  useLoaderData,
+  useActionData,
+} from "@remix-run/react";
 import { json } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 import axios from "axios";
@@ -30,6 +36,7 @@ import { CheckBoxUnit } from "../components/CheckBoxUnit";
 import { ImageDetailPage } from "../components/ImageDetailPage";
 import { ProductImage } from "../components/ProductImage";
 import { ProductSelecter } from "../components/ProductSelecter";
+import { SelectedProducts } from "../components/SelectedProducts";
 
 import prisma from "../db.server";
 
@@ -48,6 +55,12 @@ import {
   subColumnUnitDtStyle,
   polarisIconStyle,
 } from "../components/imageDetailStyle.js";
+import { readCollections } from "../models/Collections.js";
+import { readFile } from "../models/File.js";
+import { readImageSetting } from "../models/ImageSetting.js";
+import { readPatterns } from "../models/Patterns.js";
+import { readProducts } from "../models/Products.js";
+import { createTag, readTags } from "../models/Tags.js";
 
 export const loader = async ({ request, params }) => {
   const { admin } = await authenticate.admin(request);
@@ -58,105 +71,32 @@ export const loader = async ({ request, params }) => {
     "gid://shopify/MediaImage/",
     "",
   );
-  const fileResponse = await admin.graphql(`
-    {
-      files(first: 1, query: "id:${queryFileId}") {
-        nodes {
-          id
-          createdAt
-          ... on MediaImage {
-            id
-            image {
-              id
-              originalSrc
-              width
-              height
-            }
-          }
-        }
-      }
-    }`);
-  const {
-    data: {
-      files: {
-        nodes: [file],
-      },
-    },
-  } = await fileResponse.json();
-
+  const file = await readFile({ admin, queryFileId });
   // 商品情報を取得する
-  const productResponse = await admin.graphql(`
-    {
-      products(first: 50) {
-        nodes {
-          id
-          title
-          images(first: 1) {
-            edges {
-              node {
-                originalSrc
-                altText
-                width
-                height
-              }
-            }
-          }
-        }
-      }
-    }`);
-  const {
-    data: {
-      products: { nodes: products },
-    },
-  } = await productResponse.json();
-
+  const products = await readProducts({ admin });
+  // タグ情報を取得する
+  const tags = await readTags({ admin });
   // コレクションを取得する
-  const collectionResponse = await admin.graphql(`
-    {
-      collections(first: 200) {
-        nodes {
-          id
-          title
-          products(first: 50) {
-            nodes {
-              id
-              title
-            }
-          }
-        }
-      }
-    }`);
-  const {
-    data: {
-      collections: { nodes: collections },
-    },
-  } = await collectionResponse.json();
+  const collections = await readCollections({ admin });
+  // mediaObject の image_settings を取得する
+  const imageSetting = await readImageSetting({ admin, queryFileId });
+  // 色柄の情報を取得する
+  const patterns = await readPatterns({ admin });
 
   // fileId から画像とタグ情報を取得する
-  const image = await prisma.Image.findUnique({
-    where: { fileId: fileId },
-    include: {
-      collections: true,
-      tags: true,
-      productsOnImage: true,
-      recommendProducts: true,
-    },
-  });
-  const productsOnImage =
-    image && image.productsOnImage ? image.productsOnImage : [];
-  const recommendProducts =
-    image && image.productsOnImage ? image.recommendProducts : [];
-  const tags = await prisma.tag.findMany();
-  const colors = await prisma.color.findMany();
+  const productsOnImage = [];
 
   return {
     collections,
-    colors,
+    patterns,
     file,
-    image,
+    image: imageSetting,
     products,
     productsOnImage,
-    recommendProducts,
+    recommendProducts:
+      imageSetting && imageSetting.recommendProduct
+        ? [imageSetting.recommendProduct]
+        : [],
     tags,
   };
 };
@@ -261,28 +201,11 @@ const updateTags = async (postData) => {
   }
 };
 
-// タグを追加する
-const addTag = async (postData) => {
-  const { addTag } = postData;
-
-  try {
-    await prisma.tag.create({
-      data: {
-        name: addTag,
-      },
-    });
-
-    return true;
-  } catch (error) {
-    console.error(error);
-    return false;
-  } finally {
-    await prisma.$disconnect();
-  }
-};
-
 export const action = async ({ request }) => {
+  const { admin } = await authenticate.admin(request);
   const method = request.method;
+
+  console.log("action", request);
 
   switch (method) {
     case "GET": {
@@ -293,13 +216,17 @@ export const action = async ({ request }) => {
       let postData = await request.formData();
       // postData = Object.getAll(postData);
 
+      const mode = postData.get("mode");
+
       // タグを追加する
-      if (postData.addTagSubmit) {
-        const result = await addTag(postData);
+      if (mode === "createTag") {
+        const result = await createTag({
+          admin,
+          addTag: postData.get("addTag"),
+        });
         if (result) {
-          return json({
-            message: "タグを追加しました",
-          });
+          const tags = await readTags({ admin });
+          return json({ tags });
         } else {
           return json({
             message: "タグの追加に失敗しました",
@@ -353,16 +280,18 @@ export const action = async ({ request }) => {
 };
 
 export default function Image() {
+  const fetcher = useFetcher();
   const {
     collections,
-    colors,
+    patterns,
     file,
     image,
     products,
     productsOnImage,
     recommendProducts,
-    tags,
   } = useLoaderData();
+  const { tags } = fetcher.data ?? useLoaderData();
+  const actionData = useActionData();
 
   // 画像URLからファイル名と拡張子を取得する
   const fileName = file.image.originalSrc.split("/").pop();
@@ -383,7 +312,6 @@ export default function Image() {
   const [editPosition, setEditPosition] = useState({ x: 0, y: 0 });
   const handleEditProduct = useCallback(
     (product) => {
-      console.log("product", product);
       setEditProduct(product.id);
       setEditPosition({
         x: product.positionX ? product.positionX : 50,
@@ -424,9 +352,15 @@ export default function Image() {
 
   const handleProductSelectChange = useCallback(
     (selected) => {
-      console.log("handleProductSelectChange", selected, productPopoverTarget);
+      // おすすめ商品への追加/削除
       if (productPopoverTarget === "recommendProducts") {
-        // setSelectedProducts(selected);
+        if (selectedProducts.includes(selected.id)) {
+          setSelectedProducts(
+            selectedProducts.filter((id) => id !== selected.id),
+          );
+        } else {
+          setSelectedProducts([...selectedProducts, selected.id]);
+        }
       } else {
         const flag = editProductOnImage.find(
           (product) => product.id === selected.id,
@@ -458,7 +392,6 @@ export default function Image() {
   const productUnits =
     editProductOnImage && editProductOnImage.length > 0
       ? editProductOnImage.map((product, index) => {
-          console.log("product", product);
           return (
             <ProductUnit
               key={product.id}
@@ -522,13 +455,16 @@ export default function Image() {
                 </p>
               </section>
               <section>
-                <UnitTitle title="おすすめ商品" icon={CollectionIcon} />
+                <UnitTitle
+                  title="おすすめ商品として表示する"
+                  icon={CollectionIcon}
+                />
                 <div>
-                  <CheckBoxUnit
-                    items={products}
-                    selected={selectedProducts}
-                    type="recommendProducts"
-                    onChange={() => {}}
+                  <SelectedProducts
+                    products={products.filter((product) => {
+                      return selectedProducts.includes(product.id);
+                    })}
+                    onDelete={() => {}}
                   />
                   <p style={addNewButtonStyle}>
                     <Button
@@ -539,7 +475,7 @@ export default function Image() {
                         "recommendProducts",
                       )}
                     >
-                      新規追加
+                      表示する商品を追加
                     </Button>
                   </p>
                 </div>
@@ -558,7 +494,7 @@ export default function Image() {
               </dt>
               <dd>
                 <CheckBoxUnit
-                  items={colors}
+                  items={patterns}
                   selected={[]}
                   type="colors"
                   onChange={() => {}}
@@ -618,15 +554,24 @@ export default function Image() {
         </div>
       </form>
       <div className={`popover ${isAddTagPopover ? "isShow" : ""}`}>
-        <form method="post">
+        <Form method="post">
+          <input type="hidden" name="mode" value="createTag" />
           <input type="text" name="addTag" />
           <ButtonGroup className="productSelecterButtons">
             <Button onClick={handlePopover.bind(null, "tag", "tag")}>
               キャンセル
             </Button>
-            <Button variant="primary">決定</Button>
+            <Button
+              variant="primary"
+              submit
+              onClick={() => {
+                setIsAddTagPopover(false);
+              }}
+            >
+              追加する
+            </Button>
           </ButtonGroup>
-        </form>
+        </Form>
       </div>
       <div className={`popover ${isProductPopover ? "isShow" : ""}`}>
         <ProductSelecter

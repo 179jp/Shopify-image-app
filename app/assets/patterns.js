@@ -1,5 +1,3 @@
-import { DescriptionList } from "@shopify/polaris";
-
 export const Patterns = [
   // 木綿・むら染め・無地
   {
@@ -11,7 +9,8 @@ export const Patterns = [
     kana: "きぬたせいじ",
     english: "Kinutaseiji",
     colorName: "スカイブルー",
-    description: "空のように澄んだ青、玉のように色調の深い、かの昔最上とされた青磁の色。",
+    description:
+      "空のように澄んだ青、玉のように色調の深い、かの昔最上とされた青磁の色。",
     category: ["木綿", "無地"],
   },
   {
@@ -35,7 +34,8 @@ export const Patterns = [
     kana: "きからちゃ",
     english: "Kikaracha",
     colorName: "ブラウン",
-    description: "江戸前～中期の流行り色。初期の小袖雛形地色に多く用いられました。",
+    description:
+      "江戸前～中期の流行り色。初期の小袖雛形地色に多く用いられました。",
     category: ["木綿", "無地"],
   },
   {
@@ -59,7 +59,8 @@ export const Patterns = [
     kana: "うらはいろ",
     english: "Urahairo",
     colorName: "セラドングリーン",
-    description: "葛の葉裏の銀がかった緑色。江戸町方好みのきものの色でもありました。",
+    description:
+      "葛の葉裏の銀がかった緑色。江戸町方好みのきものの色でもありました。",
     category: ["木綿", "無地"],
   },
   {
@@ -95,7 +96,8 @@ export const Patterns = [
     kana: "とりのこ",
     english: "Torinoko",
     colorName: "ベージュ",
-    description: "鶏卵の殻の色に似ているから名付けられました。もとは重色目の名。",
+    description:
+      "鶏卵の殻の色に似ているから名付けられました。もとは重色目の名。",
     category: ["木綿", "無地"],
   },
   {
@@ -119,7 +121,8 @@ export const Patterns = [
     kana: "ちぐさ",
     english: "Chigusa",
     colorName: "ネイビーブルー",
-    description: "つきぐさ(露草)の名から転訛した、緑味を含まぬ冴えた美しい青色。",
+    description:
+      "つきぐさ(露草)の名から転訛した、緑味を含まぬ冴えた美しい青色。",
     category: ["木綿", "無地"],
   },
   {
@@ -143,7 +146,8 @@ export const Patterns = [
     kana: "すおう",
     english: "Suou",
     colorName: "ワイン",
-    description: "スオウの木を染色原料とした紫紅色。似せ紫としても用いられました。",
+    description:
+      "スオウの木を染色原料とした紫紅色。似せ紫としても用いられました。",
     category: ["木綿", "無地"],
   },
   {
@@ -155,7 +159,8 @@ export const Patterns = [
     kana: "きょうかのこ",
     english: "Kyokanoko",
     colorName: "レッド",
-    description: "茜染の深い赤色。歌舞伎舞踊のひとつ「京鹿子娘道成寺」の衣装から。",
+    description:
+      "茜染の深い赤色。歌舞伎舞踊のひとつ「京鹿子娘道成寺」の衣装から。",
     category: ["木綿", "無地"],
   },
   {
@@ -179,7 +184,8 @@ export const Patterns = [
     kana: "しゃれがき",
     english: "Sharegaki",
     colorName: "オレンジ",
-    description: "元禄頃までは晒柿と呼ばれていた色。江戸人が洒落てこの名で呼ぶようになりました。",
+    description:
+      "元禄頃までは晒柿と呼ばれていた色。江戸人が洒落てこの名で呼ぶようになりました。",
     category: ["木綿", "無地"],
   },
   {
@@ -191,7 +197,8 @@ export const Patterns = [
     kana: "おなんど",
     english: "Onando",
     colorName: "インディゴ",
-    description: "灰味の暗い青色。暗い処の意から付けられましたが、色名には諸説があります。",
+    description:
+      "灰味の暗い青色。暗い処の意から付けられましたが、色名には諸説があります。",
     category: ["木綿", "無地"],
   },
   {
@@ -203,7 +210,8 @@ export const Patterns = [
     kana: "ひはだ",
     english: "Hihada",
     colorName: "セピア",
-    description: "ひのきの皮の色からきた色名。戦国武将に愛された色でもあります。",
+    description:
+      "ひのきの皮の色からきた色名。戦国武将に愛された色でもあります。",
     category: ["木綿", "無地"],
   },
   {
@@ -215,7 +223,8 @@ export const Patterns = [
     kana: "つつじいろ",
     english: "Tsutsujiro",
     colorName: "ビビッドピンク",
-    description: "赤いツツジの花弁の色で赤みの赤紫色に用いられます。 牡丹色とともに、赤紫系を表す伝統色名のひとつです。",
+    description:
+      "赤いツツジの花弁の色で赤みの赤紫色に用いられます。 牡丹色とともに、赤紫系を表す伝統色名のひとつです。",
     category: ["木綿", "無地"],
   },
   {
@@ -227,7 +236,8 @@ export const Patterns = [
     kana: "なのはな",
     english: "Nanohana",
     colorName: "ブリリアントイエロー",
-    description: "菜の花のような明るい黄色に用いられる色で、 山吹と共に黄色の花を代表する色名です。",
+    description:
+      "菜の花のような明るい黄色に用いられる色で、 山吹と共に黄色の花を代表する色名です。",
     category: ["木綿", "無地"],
   },
   {
@@ -239,7 +249,8 @@ export const Patterns = [
     kana: "もえぎ",
     english: "Moegi",
     colorName: "フレッシュグリーン",
-    description: "新緑の草木が生気を帯び、萌え出るような色をいいます。 冴えた黄緑色を表す代表的な伝統色名に用いられます。 浅緑と同様に春の色の一つです。",
+    description:
+      "新緑の草木が生気を帯び、萌え出るような色をいいます。 冴えた黄緑色を表す代表的な伝統色名に用いられます。 浅緑と同様に春の色の一つです。",
     category: ["木綿", "無地"],
   },
   {
@@ -251,7 +262,8 @@ export const Patterns = [
     kana: "くちなし",
     english: "Kuchinashi",
     colorName: "タンジェリン",
-    description: "紅花と支子の実により染色された色で、萱草色・柑子色も同様な色です。 支子の単一染は暖かみのあるやや赤色の黄色で、黄支子といわれます。 支子は「口無し」ということから「いわぬ色」ともいわれました。",
+    description:
+      "紅花と支子の実により染色された色で、萱草色・柑子色も同様な色です。 支子の単一染は暖かみのあるやや赤色の黄色で、黄支子といわれます。 支子は「口無し」ということから「いわぬ色」ともいわれました。",
     category: ["木綿", "無地"],
   },
   {
@@ -263,7 +275,8 @@ export const Patterns = [
     kana: "らんぎょく",
     english: "Rangyoku",
     colorName: "アクアブルー",
-    description: "緑と青の中間の鮮やかな色が印象的な色。 名前は青い海のような清々しさと穏やかさを持つ美しい 海のような宝石、「アクアマリン」の和名からつけました。",
+    description:
+      "緑と青の中間の鮮やかな色が印象的な色。 名前は青い海のような清々しさと穏やかさを持つ美しい 海のような宝石、「アクアマリン」の和名からつけました。",
     category: ["木綿", "無地"],
   },
   {
@@ -275,7 +288,8 @@ export const Patterns = [
     kana: "かちいろ",
     english: "Kachiiro",
     colorName: "カチイロ",
-    description: "藍の葉を搗いて染料を作ったこと、あるいは被染物に濃くしみ込ませるために搗つことから、 搗 色（かちんいろ）・ 褐色（かちいろ）・勝色といいます。 武将は、藍染の質実剛健さを信条に、勝つにつながる縁起をかついで、勝色縅しの鎧を愛用しました。",
+    description:
+      "藍の葉を搗いて染料を作ったこと、あるいは被染物に濃くしみ込ませるために搗つことから、 搗 色（かちんいろ）・ 褐色（かちいろ）・勝色といいます。 武将は、藍染の質実剛健さを信条に、勝つにつながる縁起をかついで、勝色縅しの鎧を愛用しました。",
     category: ["木綿", "無地"],
   },
 
@@ -618,7 +632,8 @@ export const Patterns = [
     name: "青鈍",
     kana: "あおにび",
     colorName: "グレー",
-    description: "江戸時代後期に、粋な鼠色として大変愛用された青味がかった鈍色。",
+    description:
+      "江戸時代後期に、粋な鼠色として大変愛用された青味がかった鈍色。",
     category: ["本麻"],
   },
   {
@@ -651,7 +666,8 @@ export const Patterns = [
     name: "橘",
     kana: "たちばな",
     colorName: "イエロー",
-    description: "ミカン種の数少ない日本原産種。不老不死の霊果としても珍重されていました。",
+    description:
+      "ミカン種の数少ない日本原産種。不老不死の霊果としても珍重されていました。",
     category: ["本麻"],
   },
   {
@@ -673,7 +689,8 @@ export const Patterns = [
     name: "丁字茶",
     kana: "ちょうじちゃ",
     colorName: "ブラウン",
-    description: "平安時代から行われた丁子染(香染)を茶がからせた黄褐色をいいます。",
+    description:
+      "平安時代から行われた丁子染(香染)を茶がからせた黄褐色をいいます。",
     category: ["本麻"],
   },
   {
@@ -695,7 +712,8 @@ export const Patterns = [
     name: "墨",
     kana: "すみ",
     colorName: "ブラック",
-    description: "墨の五彩、焦・濃・重・淡・清の階調の一番濃い焦墨を指す黒に近い灰黒色。",
+    description:
+      "墨の五彩、焦・濃・重・淡・清の階調の一番濃い焦墨を指す黒に近い灰黒色。",
     category: ["本麻"],
   },
   {
@@ -706,7 +724,8 @@ export const Patterns = [
     name: "銹絵",
     kana: "さびえ",
     colorName: "ダークブラウン",
-    description: "初期の京焼に見られる、鉄絵の具で描かれた侘びた風情と古朴な図柄の色。",
+    description:
+      "初期の京焼に見られる、鉄絵の具で描かれた侘びた風情と古朴な図柄の色。",
     category: ["本麻"],
   },
   {
@@ -739,7 +758,8 @@ export const Patterns = [
     name: "躑躅色",
     kana: "つつじいろ",
     colorName: "ビビッドピンク",
-    description: "赤いツツジの花弁の色で赤みの赤紫色に用いられます。牡丹色とともに、赤紫系を表す伝統色名のひとつです。",
+    description:
+      "赤いツツジの花弁の色で赤みの赤紫色に用いられます。牡丹色とともに、赤紫系を表す伝統色名のひとつです。",
     category: ["本麻"],
   },
   {
