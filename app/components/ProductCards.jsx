@@ -1,6 +1,11 @@
-export const SelectedProducts = ({ products, onDelete }) => {
+import { Button, Thumbnail } from "@shopify/polaris";
+import { DeleteIcon } from "@shopify/polaris-icons";
+
+import "./ProductCards.css";
+
+export const ProductCards = ({ products, onDelete }) => {
   return (
-    <ul className="selectedProducts">
+    <ul className="productCards">
       {products.map((product) => {
         const img =
           product.images.edges[0] && product.images.edges[0].node
@@ -12,12 +17,13 @@ export const SelectedProducts = ({ products, onDelete }) => {
           <Thumbnail source={NoteIcon} size="large" alt="No Image" />
         );
         return (
-          <li className={`productList_item`} key={product.id}>
-            <div>
+          <li className={`productCard`} key={product.id}>
+            <div className="productCard_content">
               {productImg}
               <p>{product.title}</p>
             </div>
             <Button
+              icon={DeleteIcon}
               onClick={() => {
                 onDelete(product.id);
               }}

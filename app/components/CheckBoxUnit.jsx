@@ -53,7 +53,7 @@ const Label = ({ isSmall, children }) => {
   );
 };
 
-export const CheckBoxUnit = ({ items, selected, type, onChange }) => {
+export const CheckBoxUnit = ({ items, selected, type, changeHandler }) => {
   const listClass = type === "colors" ? columnStyle : listStyle;
   return (
     <Wrapper>
@@ -66,7 +66,9 @@ export const CheckBoxUnit = ({ items, selected, type, onChange }) => {
                   type="checkbox"
                   name={`${type}`}
                   checked={selected.includes(item.id)}
-                  onChange={() => onChange(item.id)}
+                  onChange={(e) => {
+                    changeHandler(e.target.value);
+                  }}
                   value={item.id}
                 />
                 {type === "tags" || type === "colors" ? item.name : item.title}

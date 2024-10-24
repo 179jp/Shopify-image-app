@@ -9,6 +9,19 @@ import {
 import { json } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 import axios from "axios";
+
+// Models
+import { readCollections } from "../models/Collections.js";
+import { readFile } from "../models/File.js";
+import {
+  readImageSetting,
+  upsertImageSetting,
+} from "../models/ImageSetting.js";
+import { readPatterns } from "../models/Patterns.js";
+import { readProducts } from "../models/Products.js";
+import { createTag, readTags } from "../models/Tags.js";
+
+// Components
 import {
   BlockStack,
   Box,
@@ -29,20 +42,19 @@ import {
   HashtagDecimalIcon,
   PlusIcon,
 } from "@shopify/polaris-icons";
-
 import { UnitTitle } from "../components/UnitTitle";
 import { ProductUnit } from "../components/ProductUnit";
 import { CheckBoxUnit } from "../components/CheckBoxUnit";
 import { ImageDetailPage } from "../components/ImageDetailPage";
+import { ProductCards } from "../components/ProductCards";
 import { ProductImage } from "../components/ProductImage";
 import { ProductSelecter } from "../components/ProductSelecter";
-import { SelectedProducts } from "../components/SelectedProducts";
 
 import prisma from "../db.server";
 
+// Styles
 import "../components/default.css";
 import "../components/imageDetailPage.css";
-
 import {
   addNewButtonStyle,
   buttonAreaStyle,
@@ -55,16 +67,11 @@ import {
   subColumnUnitDtStyle,
   polarisIconStyle,
 } from "../components/imageDetailStyle.js";
-import { readCollections } from "../models/Collections.js";
-import { readFile } from "../models/File.js";
-import { readImageSetting } from "../models/ImageSetting.js";
-import { readPatterns } from "../models/Patterns.js";
-import { readProducts } from "../models/Products.js";
-import { createTag, readTags } from "../models/Tags.js";
 
 export const loader = async ({ request, params }) => {
   const { admin } = await authenticate.admin(request);
   const { fileId } = params;
+  const handle = "image_" + fileId.replace("gid://shopify/MediaImage/", "");
 
   // fileId から画像情報を取得する
   const queryFileId = decodeURIComponent(fileId).replace(
@@ -79,7 +86,7 @@ export const loader = async ({ request, params }) => {
   // コレクションを取得する
   const collections = await readCollections({ admin });
   // mediaObject の image_settings を取得する
-  const imageSetting = await readImageSetting({ admin, queryFileId });
+  const imageSetting = await readImageSetting({ admin, handle });
   // 色柄の情報を取得する
   const patterns = await readPatterns({ admin });
 
@@ -90,6 +97,7 @@ export const loader = async ({ request, params }) => {
     collections,
     patterns,
     file,
+    handle,
     image: imageSetting,
     products,
     productsOnImage,
@@ -232,6 +240,33 @@ export const action = async ({ request }) => {
             message: "タグの追加に失敗しました",
           });
         }
+        // 画像設定を保存する（新規保存）
+      } else if (mode == "saveImageSetting") {
+        const imageId = postData.get("id");
+        const collections = postData.get("collections");
+        const fileId = postData.get("fileId");
+        const patterns = postData.get("patterns");
+        const recommendProduct = postData.get("recommendProduct");
+        const tags = postData.get("tags");
+        const result = await upsertImageSetting({
+          admin,
+          imageSetting: {
+            imageId,
+            collections,
+            fileId,
+            patterns,
+            recommendProduct,
+            tags,
+          },
+        });
+        if (result) {
+          const tags = await readTags({ admin });
+          return json({ tags });
+        } else {
+          return json({
+            message: "タグの追加に失敗しました",
+          });
+        }
       } else {
         console.log("postData", postData);
         const imageId = postData.get("imageId");
@@ -285,6 +320,7 @@ export default function Image() {
     collections,
     patterns,
     file,
+    handle,
     image,
     products,
     productsOnImage,
@@ -302,6 +338,7 @@ export default function Image() {
     ext = ext.split("?")[0];
   }
 
+  // おすすめ商品
   const [selectedProducts, setSelectedProducts] = useState(recommendProducts);
 
   // 画像内の商品
@@ -343,7 +380,6 @@ export default function Image() {
       } else {
         setIsAddTagPopover(false);
         setIsProductPopover((prevIsProductPopover) => !prevIsProductPopover);
-        console.log("handlePopover", target);
         setProductPopoverTarget(target);
       }
     },
@@ -354,13 +390,8 @@ export default function Image() {
     (selected) => {
       // おすすめ商品への追加/削除
       if (productPopoverTarget === "recommendProducts") {
-        if (selectedProducts.includes(selected.id)) {
-          setSelectedProducts(
-            selectedProducts.filter((id) => id !== selected.id),
-          );
-        } else {
-          setSelectedProducts([...selectedProducts, selected.id]);
-        }
+        console.log("recommendProducts", selected, selectedProducts);
+        setSelectedProducts(selected.map((product) => product.id));
       } else {
         const flag = editProductOnImage.find(
           (product) => product.id === selected.id,
@@ -383,7 +414,13 @@ export default function Image() {
         }
       }
     },
-    [productPopoverTarget, editProduct, editProductOnImage, editPosition],
+    [
+      productPopoverTarget,
+      editProduct,
+      editProductOnImage,
+      editPosition,
+      selectedProducts,
+    ],
   );
 
   // タグ追加の処理
@@ -408,6 +445,64 @@ export default function Image() {
           );
         })
       : null;
+
+  // 選択している色柄
+  const [selectedPatterns, setSelectedPatterns] = useState([]);
+  const handlePatternsChange = useCallback(
+    (selected) => {
+      if (selectedPatterns.includes(selected)) {
+        setSelectedPatterns(selectedPatterns.filter((id) => id !== selected));
+      } else {
+        setSelectedPatterns([...selectedPatterns, selected]);
+      }
+    },
+    [selectedPatterns],
+  );
+  // 選択しているコレクション
+  const [selectedCollections, setSelectedCollections] = useState([]);
+  const handleCollectionChange = useCallback(
+    (selected) => {
+      if (selectedCollections.includes(selected)) {
+        setSelectedCollections(
+          selectedCollections.filter((id) => id !== selected),
+        );
+      } else {
+        setSelectedCollections([...selectedCollections, selected]);
+      }
+    },
+    [selectedCollections],
+  );
+  // 選択している色柄
+  const [selectedTags, setSelectedTags] = useState([]);
+  const handleTagsChange = useCallback(
+    (selected) => {
+      if (selectedTags.includes(selected)) {
+        setSelectedTags(selectedTags.filter((id) => id !== selected));
+      } else {
+        setSelectedTags([...selectedTags, selected]);
+      }
+    },
+    [selectedTags],
+  );
+
+  // 保存するための処理
+  const handlePageSubmit = () => {
+    fetcher.submit(
+      {
+        id: handle,
+        fileId: file.id,
+        collections: JSON.stringify(selectedCollections),
+        mode: "saveImageSetting",
+        patterns: JSON.stringify(selectedPatterns),
+        recommendProduct:
+          selectedProduct.length > 0 ? selectedProducts[0] : null,
+        tags: JSON.stringify(selectedTags),
+      },
+      {
+        method: "POST",
+      },
+    );
+  };
 
   return (
     <Page
@@ -460,11 +555,11 @@ export default function Image() {
                   icon={CollectionIcon}
                 />
                 <div>
-                  <SelectedProducts
-                    products={products.filter((product) => {
-                      return selectedProducts.includes(product.id);
-                    })}
-                    onDelete={() => {}}
+                  <ProductCards
+                    products={products.filter((product) =>
+                      selectedProducts.includes(product.id),
+                    )}
+                    onDelete={setSelectedProducts}
                   />
                   <p style={addNewButtonStyle}>
                     <Button
@@ -495,9 +590,9 @@ export default function Image() {
               <dd>
                 <CheckBoxUnit
                   items={patterns}
-                  selected={[]}
+                  selected={selectedPatterns}
                   type="colors"
-                  onChange={() => {}}
+                  changeHandler={handlePatternsChange}
                 />
               </dd>
             </dl>
@@ -513,9 +608,9 @@ export default function Image() {
               <dd>
                 <CheckBoxUnit
                   items={collections}
-                  selected={[]}
+                  selected={selectedCollections}
                   type="collections"
-                  onChange={() => {}}
+                  changeHandler={handleCollectionChange}
                 />
               </dd>
             </dl>
@@ -531,9 +626,9 @@ export default function Image() {
               <dd>
                 <CheckBoxUnit
                   items={tags}
-                  selected={[]}
+                  selected={selectedTags}
                   type="tags"
-                  onChange={() => {}}
+                  changeHandler={handleTagsChange}
                 />
               </dd>
               <dd>
@@ -550,7 +645,9 @@ export default function Image() {
           </div>
         </div>
         <div style={buttonAreaStyle}>
-          <Button variant="primary">保存する</Button>
+          <Button variant="primary" onClick={() => handlePageSubmit()}>
+            保存する
+          </Button>
         </div>
       </form>
       <div className={`popover ${isAddTagPopover ? "isShow" : ""}`}>

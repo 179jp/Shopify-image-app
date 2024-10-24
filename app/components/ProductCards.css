@@ -1,0 +1,19 @@
+.productCards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.productCard {
+  align-items: center;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0rem 0rem 0rem 0.0625rem rgba(0, 0, 0, 0.08) inset;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+}
+.productCard_content {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
