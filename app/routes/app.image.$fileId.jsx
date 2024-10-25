@@ -315,6 +315,7 @@ export const action = async ({ request }) => {
 };
 
 export default function Image() {
+  const shopify = useAppBridge();
   const fetcher = useFetcher();
   const {
     collections,
