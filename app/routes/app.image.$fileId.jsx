@@ -327,7 +327,6 @@ export default function Image() {
     recommendProducts,
   } = useLoaderData();
   const { tags } = fetcher.data ?? useLoaderData();
-  const actionData = useActionData();
 
   // 画像URLからファイル名と拡張子を取得する
   const fileName = file.image.originalSrc.split("/").pop();

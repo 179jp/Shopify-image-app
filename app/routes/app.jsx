@@ -23,7 +23,6 @@ export default function App() {
         <Link to="/app" rel="home">
           Home
         </Link>
-        <Link to="/app/patterns">色柄設定</Link>
       </NavMenu>
       <Outlet />
     </AppProvider>
