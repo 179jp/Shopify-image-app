@@ -15,7 +15,11 @@ import {
   Link,
   InlineStack,
 } from "@shopify/polaris";
-import { SearchIcon, SortIcon } from "@shopify/polaris-icons";
+import {
+  MeasurementSizeIcon,
+  SearchIcon,
+  SortIcon,
+} from "@shopify/polaris-icons";
 import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { useLoaderData } from "react-router-dom";
 import { authenticate } from "../shopify.server";
@@ -40,7 +44,7 @@ export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const filesResponse = await admin.graphql(`
     {
-      files(first: 100) {
+      files(first: 250) {
         nodes {
           id
           createdAt
@@ -248,6 +252,8 @@ export default function Index() {
   }, [productId, shopify]);
   const generateProduct = () => fetcher.submit({}, { method: "POST" });
 
+  const [gridSize, setGridSize] = useState("normal");
+
   return (
     <Page
       fullWidth
@@ -265,29 +271,51 @@ export default function Index() {
                 <button type="submit">検索</button>
               </li>
               <li>
-                <Icon source={SortIcon} tone="base" />
-                <select
-                  name="sortBy"
-                  onChange={(e) => {
-                    setFileSort(e.target.value);
-                    fetcher.submit(
-                      {
-                        sortBy: e.target.value,
-                      },
-                      {
-                        method: "POST",
-                      },
-                    );
-                  }}
-                >
-                  <option value="first">新しい順</option>
-                  <option value="last">古い順</option>
-                </select>
+                <p className="imageFilter_sub">
+                  <Icon source={SortIcon} tone="base" />
+                  <select
+                    name="sortBy"
+                    onChange={(e) => {
+                      setFileSort(e.target.value);
+                      fetcher.submit(
+                        {
+                          sortBy: e.target.value,
+                        },
+                        {
+                          method: "POST",
+                        },
+                      );
+                    }}
+                    value={fileSort}
+                  >
+                    <option value="first">古い順</option>
+                    <option value="last">新しい順</option>
+                  </select>
+                </p>
+                <p className="imageFilter_sub">
+                  <Icon source={MeasurementSizeIcon} tone="base" />
+                  <select
+                    name="gridSize"
+                    onChange={(e) => {
+                      setGridSize(e.target.value);
+                    }}
+                    value={gridSize}
+                  >
+                    <option value="big">大きめ</option>
+                    <option value="normal">通常</option>
+                    <option value="small">小さめ</option>
+                    <option value="ex-small">極小</option>
+                  </select>
+                </p>
               </li>
             </ul>
           </fetcher.Form>
         </div>
-        <ImagesCards files={files} handleSelection={handleSelection} />
+        <ImagesCards
+          files={files}
+          handleSelection={handleSelection}
+          grid={gridSize}
+        />
       </div>
     </Page>
   );

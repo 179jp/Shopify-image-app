@@ -18,3 +18,8 @@
 .imageFilter_params select {
   padding: 0.25em;
 }
+.imageFilter_sub {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+}
