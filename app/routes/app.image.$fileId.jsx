@@ -11,15 +11,15 @@ import { authenticate } from "../shopify.server";
 import axios from "axios";
 
 // Models
-import { readCollections } from "../models/Collections.js";
-import { readFile } from "../models/File.js";
+import { readCollections } from "../models/Collections.server.js";
+import { readFile } from "../models/File.server.js";
 import {
   readImageSetting,
   upsertImageSetting,
-} from "../models/ImageSetting.js";
-import { readPatterns } from "../models/Patterns.js";
-import { readProducts } from "../models/Products.js";
-import { createTag, readTags } from "../models/Tags.js";
+} from "../models/ImageSetting.server.js";
+import { readPatterns } from "../models/Patterns.server.js";
+import { readProducts } from "../models/Products.server.js";
+import { createTag, readTags } from "../models/Tags.server.js";
 
 // Components
 import {
