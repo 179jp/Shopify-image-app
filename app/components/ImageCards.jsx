@@ -15,6 +15,7 @@ export const ImagesCards = ({ files, handleSelection, grid = "normal" }) => {
               src={file.image.originalSrc}
               alt={file.id}
               className="imageCard_img"
+              loading="lazy"
             />
           </Link>
         </div>

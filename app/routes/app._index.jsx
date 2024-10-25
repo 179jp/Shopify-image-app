@@ -204,7 +204,7 @@ export default function Index() {
   );
 
   // Filter
-  const [fileSort, setFileSort] = useState("last");
+  const [fileSort, setFileSort] = useState("first");
   const [fileName, setFileName] = useState(null);
   const handleFilterChange = (e) => {
     const formData = new FormData(e.currentTarget);
