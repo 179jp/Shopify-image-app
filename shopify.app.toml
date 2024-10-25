@@ -1,6 +1,6 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "3966b17d28a83066354fdd3fab8fc727"
+client_id = "42998616949fc0a265c471ab5f0ae7cd"
 name = "image-handle-app"
 handle = "image-handle-app"
 application_url = "https://shopify-takaokaya-image-app.onrender.com"
