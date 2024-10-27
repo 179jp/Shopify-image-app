@@ -6,6 +6,7 @@ import {
   useLoaderData,
   useActionData,
 } from "@remix-run/react";
+import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { json } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 import axios from "axios";
