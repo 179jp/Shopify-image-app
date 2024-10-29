@@ -110,106 +110,6 @@ export const loader = async ({ request, params }) => {
   };
 };
 
-// Image データの追加
-const insertImage = async (postData) => {
-  try {
-    await prisma.image.create({
-      data: {
-        fileId: postData.fileId,
-      },
-    });
-    // 追加に成功した場合、idを取得して返す
-    const image = await prisma.image.findUnique({
-      where: { fileId: postData.fileId },
-    });
-    return image.id;
-  } catch (error) {
-    console.error(error);
-    return false;
-  } finally {
-    await prisma.$disconnect();
-  }
-};
-
-// recommendProductsの更新
-const updateRecommendProducts = async (postData) => {
-  const { imageId, recommendProducts } = postData;
-
-  try {
-    // 既存の recommendProducts を削除
-    await prisma.recommendProduct.deleteMany({
-      where: { imageId: imageId },
-    });
-    // 新しい recommendProducts を追加
-    await prisma.recommendProduct.createMany({
-      data: recommendProducts.map((product) => {
-        return {
-          imageId: imageId,
-          productId: product,
-        };
-      }),
-    });
-    return true;
-  } catch (error) {
-    console.error(error);
-    return false;
-  } finally {
-    await prisma.$disconnect();
-  }
-};
-
-const updateCollections = async (postData) => {
-  const { imageId, collections } = postData;
-
-  try {
-    // 既存の recommendProducts を削除
-    await prisma.collection.deleteMany({
-      where: { imageId: imageId },
-    });
-    // 新しい recommendProducts を追加
-    await prisma.collection.createMany({
-      data: collections.map((id) => {
-        return {
-          imageId: imageId,
-          collectionId: id,
-        };
-      }),
-    });
-    return true;
-  } catch (error) {
-    console.error(error);
-    return false;
-  } finally {
-    await prisma.$disconnect();
-  }
-};
-
-const updateTags = async (postData) => {
-  const { imageId, tags } = postData;
-
-  try {
-    // 既存の recommendProducts を削除
-    await prisma.ImageTag.deleteMany({
-      where: { imageId: imageId },
-    });
-    // 新しい recommendProducts を追加
-    await prisma.ImageTag.createMany({
-      data: tags.map((id) => {
-        return {
-          imageId: imageId,
-          tagId: id,
-        };
-      }),
-    });
-    return true;
-  } catch (error) {
-    console.error(error);
-    return false;
-  } finally {
-    await prisma.$disconnect();
-  }
-};
-
 export const action = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const method = request.method;
@@ -270,41 +170,6 @@ export const action = async ({ request }) => {
         }
       } else {
         console.log("postData", postData);
-        const imageId = postData.get("imageId");
-        if (!imageId) {
-          // Image に追加する
-          const imageId = await insertImage({
-            imageId,
-            fileId: postData.get("fileId"),
-          });
-        }
-        // おすすめ商品を追加する
-        const recommendProducts = postData.getAll("recommendProducts");
-        if (recommendProducts) {
-          const result = await updateRecommendProducts({
-            imageId,
-            recommendProducts,
-          });
-        }
-        // コレクション
-        const collections = postData.getAll("collections");
-        if (collections) {
-          const result = await updateCollections({
-            imageId,
-            collections,
-          });
-        }
-        // タグ
-        const tags = postData.getAll("tags");
-        if (tags) {
-          const result = await updateTags({
-            imageId,
-            tags,
-          });
-        }
-        return json({
-          message: "Request to the homepage",
-        });
       }
     }
     default: {
@@ -622,7 +487,7 @@ export default function Image() {
                   tone="textInfo"
                   style={polarisIconStyle}
                 />
-                タグ
+                用途
               </dt>
               <dd>
                 <CheckBoxUnit
