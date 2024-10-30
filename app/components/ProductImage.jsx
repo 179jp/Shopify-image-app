@@ -36,8 +36,8 @@ export const ProductImage = ({
       ? productsOnImage.map((product, index) => {
           const isEdit = editProduct == product.id;
           const style = {
-            top: isEdit ? `${editPosition.y}%` : `${product.positionY}%`,
-            left: isEdit ? `${editPosition.x}%` : `${product.positionX}%`,
+            top: isEdit ? `${editPosition.y}%` : `${product.y}%`,
+            left: isEdit ? `${editPosition.x}%` : `${product.x}%`,
           };
           return (
             <span

@@ -108,7 +108,7 @@ export const ProductUnit = ({
       <dd style={ddStyle}>
         <ul>
           <li>
-            {product.productTitle}
+            {product.product.title}
             {isEdit && (
               <Button onClick={handlePopover} style="margin-left:0.5em;">
                 変更
@@ -125,7 +125,7 @@ export const ProductUnit = ({
               <p>
                 {isEdit
                   ? `${editPosition.x}, ${editPosition.y}`
-                  : `${product.positionX}, ${product.positionY}`}
+                  : `${product.x}, ${product.y}`}
               </p>
             </PositionSettings>
           </li>

@@ -20,6 +20,10 @@ import {
 } from "../models/ImageSetting.server.js";
 import { readPatterns } from "../models/Patterns.server.js";
 import { readProducts } from "../models/Products.server.js";
+import {
+  readProductOnImage,
+  upsertProductOnImage,
+} from "../models/ProductOnImage.server.js";
 import { createTag, readTags } from "../models/Tags.server.js";
 
 // Components
@@ -50,8 +54,6 @@ import { ImageDetailPage } from "../components/ImageDetailPage";
 import { ProductCards } from "../components/ProductCards";
 import { ProductImage } from "../components/ProductImage";
 import { ProductSelecter } from "../components/ProductSelecter";
-
-import prisma from "../db.server";
 
 // Styles
 import "../components/default.css";
@@ -90,9 +92,21 @@ export const loader = async ({ request, params }) => {
   const imageSetting = await readImageSetting({ admin, handle });
   // 色柄の情報を取得する
   const patterns = await readPatterns({ admin });
-
   // fileId から画像とタグ情報を取得する
-  const productsOnImage = [];
+  let productsOnImage = [];
+  if (imageSetting && imageSetting.productsOnImage.length > 0) {
+    const productsOnImagePromises = imageSetting.productsOnImage.map(
+      (product) => {
+        return readProductOnImage({
+          admin,
+          productOnImageId: product,
+        });
+      },
+    );
+    // すべての非同期処理が完了するまで待機し、結果を取得する
+    productsOnImage = await Promise.all(productsOnImagePromises);
+    console.log(productsOnImage);
+  }
 
   return {
     collections,
@@ -103,8 +117,8 @@ export const loader = async ({ request, params }) => {
     products,
     productsOnImage,
     recommendProducts:
-      imageSetting && imageSetting.recommendProduct
-        ? [imageSetting.recommendProduct]
+      imageSetting && imageSetting.recommendProducts
+        ? [imageSetting.recommendProducts]
         : [],
     tags,
   };
@@ -127,8 +141,8 @@ export const action = async ({ request }) => {
 
       const mode = postData.get("mode");
 
-      // タグを追加する
       if (mode === "createTag") {
+        // タグを追加する
         const result = await createTag({
           admin,
           addTag: postData.get("addTag"),
@@ -141,26 +155,57 @@ export const action = async ({ request }) => {
             message: "タグの追加に失敗しました",
           });
         }
-        // 画像設定を保存する（新規保存）
       } else if (mode == "saveImageSetting") {
+        // 画像設定を保存する（新規保存）
         const imageId = postData.get("id");
         const collections = postData.get("collections");
         const fileId = postData.get("fileId");
         const patterns = postData.get("patterns");
         const recommendProduct = postData.get("recommendProduct");
         const tags = postData.get("tags");
+        const productsOnImage = postData.get("productsOnImage");
+        const productIdsOnImage = postData.get("productIdsOnImage");
         const result = await upsertImageSetting({
           admin,
           imageSetting: {
             imageId,
             collections,
+            productsOnImage: productIdsOnImage,
             fileId,
             patterns,
             recommendProduct,
             tags,
           },
         });
-        if (result) {
+        console.log("result", result);
+        // ProductOnImage の保存処理
+        if (result && result.id && productsOnImage) {
+          const products = JSON.parse(productsOnImage);
+          const upsertProductOnImagePromises = products.map((product) => {
+            const productHandle =
+              imageId.replace("image_", "") +
+              "-" +
+              product.product.id.replace("gid://shopify/Product/", "");
+            return upsertProductOnImage({
+              admin,
+              imageSettingId: result.id,
+              handle: productHandle,
+              product,
+            });
+          });
+          // すべての非同期処理が完了するまで待機し、結果を取得する
+          const upsertProductOnImageResult = await Promise.all(
+            upsertProductOnImagePromises,
+          );
+          if (upsertProductOnImageResult) {
+            const tags = await readTags({ admin });
+            return json({ tags });
+          } else {
+            return json({
+              message: "タグの追加に失敗しました",
+            });
+          }
+        } else if (result) {
           const tags = await readTags({ admin });
           return json({ tags });
         } else {
@@ -208,7 +253,8 @@ export default function Image() {
   const [selectedProducts, setSelectedProducts] = useState(recommendProducts);
 
   // 画像内の商品
-  const [editProductOnImage, setEditProductOnImage] = useState(productsOnImage);
+  const [editProductsOnImage, setEditProductsOnImage] =
+    useState(productsOnImage);
 
   // 編集中のプロダクトを設定する
   const [editProduct, setEditProduct] = useState(null);
@@ -259,21 +305,23 @@ export default function Image() {
         console.log("recommendProducts", selected, selectedProducts);
         setSelectedProducts(selected.map((product) => product.id));
       } else {
-        const flag = editProductOnImage.find(
+        const flag = editProductsOnImage.find(
           (product) => product.id === selected.id,
         );
-        console.log("handleProductSelectChange flag", flag);
         if (!flag) {
           console.log("handleProductSelectChange", selected);
           const product = selected[0];
           setEditProduct(product.id);
-          setEditProductOnImage([
-            ...editProductOnImage,
+          setEditProductsOnImage([
+            ...editProductsOnImage,
             {
-              id: product.id,
-              productTitle: product.title,
-              positionX: 50,
-              positionY: 50,
+              id: null,
+              product: {
+                id: product.id,
+                title: product.title,
+              },
+              x: 50,
+              y: 50,
             },
           ]);
           setEditPosition({ x: 50, y: 50 });
@@ -283,7 +331,7 @@ export default function Image() {
     [
       productPopoverTarget,
       editProduct,
-      editProductOnImage,
+      editProductsOnImage,
       editPosition,
       selectedProducts,
     ],
@@ -293,8 +341,9 @@ export default function Image() {
   const [addTag, setAddTag] = useState(null);
 
   const productUnits =
-    editProductOnImage && editProductOnImage.length > 0
-      ? editProductOnImage.map((product, index) => {
+    editProductsOnImage && editProductsOnImage.length > 0
+      ? editProductsOnImage.map((product, index) => {
+          console.log("product-editProductsOnImage.map", product);
           return (
             <ProductUnit
               key={product.id}
@@ -356,12 +405,16 @@ export default function Image() {
     fetcher.submit(
       {
         id: handle,
+        productsOnImage: JSON.stringify(editProductsOnImage),
+        productIdsOnImage: JSON.stringify(
+          editProductsOnImage.map((product) => product.product.id),
+        ),
         fileId: file.id,
         collections: JSON.stringify(selectedCollections),
         mode: "saveImageSetting",
         patterns: JSON.stringify(selectedPatterns),
         recommendProduct:
-          selectedProduct.length > 0 ? selectedProducts[0] : null,
+          selectedProducts.length > 0 ? selectedProducts[0] : null,
         tags: JSON.stringify(selectedTags),
       },
       {
@@ -375,7 +428,7 @@ export default function Image() {
       backAction={{ content: "App", url: "/app" }}
       fullWidth
       title={`${name}.${ext}`}
-      subtitle={`${file.image.width}×${file.image.height}`}
+      subtitle={image ? image.id : ""}
       compactTitle
       pagination={{
         hasPrevious: true,
@@ -396,7 +449,7 @@ export default function Image() {
               handleEditProduct={handleEditProduct}
               handleEditPosition={handleEditPosition}
               onClick={[]}
-              productsOnImage={editProductOnImage}
+              productsOnImage={editProductsOnImage}
             />
             <div style={productSettingStyle}>
               <section>

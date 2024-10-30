@@ -1,5 +1,5 @@
 /**
- * AdminAPI からの商品情報の取得
+ * AdminAPI から MetaObject の ImageSetting
  */
 import { json } from "@remix-run/node";
 import { JsonFormat } from "./JsonFormat";
@@ -41,30 +41,49 @@ const formatImageSetting = (imageSetting) => {
   const collections = imageSetting.fields.find(
     (field) => field.key === "collections",
   );
-  const recommendProduct = imageSetting.fields.find(
-    (field) => field.key === "recommend_product",
+  const recommendProducts = imageSetting.fields.find(
+    (field) => field.key === "recommend_products",
   );
   const selectedTags = imageSetting.fields.find(
     (field) => field.key === "tags",
+  );
+  const productsOnImage = imageSetting.fields.find(
+    (field) => field.key === "products_on_image",
   );
   return {
     id: imageSetting.id,
     type: imageSetting.type,
     handle: imageSetting.handle,
-    collections: collections && collections.value ? collections.value : [],
-    recommendProduct:
-      recommendProduct && recommendProduct.value ? recommendProduct.value : [],
-    selectedTags: selectedTags && selectedTags.value ? selectedTags.value : [],
+    collections:
+      collections && collections.value ? JSON.parse(collections.value) : [],
+    recommendProducts:
+      recommendProducts && recommendProducts.value
+        ? JSON.parse(recommendProducts.value)
+        : [],
+    selectedTags:
+      selectedTags && selectedTags.value ? JSON.parse(selectedTags.value) : [],
+    productsOnImage:
+      productsOnImage && productsOnImage.value
+        ? JSON.parse(productsOnImage.value)
+        : [],
   };
 };
 
 export const upsertImageSetting = async ({ admin, imageSetting }) => {
-  const { collections, imageId, fileId, patterns, recommendProduct, tags } =
-    imageSetting;
+  const {
+    collections,
+    imageId,
+    productsOnImage,
+    fileId,
+    patterns,
+    recommendProduct,
+    tags,
+  } = imageSetting;
   const mutation = `
 mutation UpsertMetaobject($handle: MetaobjectHandleInput!, $metaobject: MetaobjectUpsertInput!) {
     metaobjectUpsert(handle: $handle, metaobject: $metaobject) {
       metaobject {
+        id
         handle
         capabilities {
           publishable {
@@ -83,6 +102,39 @@ mutation UpsertMetaobject($handle: MetaobjectHandleInput!, $metaobject: Metaobje
       }
     }
   }`;
+  const fields = [
+    {
+      key: "image",
+      value: fileId,
+    },
+    {
+      key: "patterns",
+      value: patterns,
+    },
+    {
+      key: "collections",
+      value: collections,
+    },
+    {
+      key: "tags",
+      value: tags,
+    },
+    {
+      key: "products",
+      value: productsOnImage,
+    },
+  ];
+  if (
+    recommendProduct &&
+    recommendProduct != "null" &&
+    recommendProduct.length > 0
+  ) {
+    fields.push({
+      key: "recommend_products",
+      value: recommendProduct,
+    });
+  }
+
   const variables = {
     handle: {
       type: "image_settings",
@@ -94,28 +146,7 @@ mutation UpsertMetaobject($handle: MetaobjectHandleInput!, $metaobject: Metaobje
           status: "ACTIVE",
         },
       },
-      fields: [
-        {
-          key: "image",
-          value: fileId,
-        },
-        {
-          key: "patterns",
-          value: patterns,
-        },
-        {
-          key: "collections",
-          value: collections,
-        },
-        {
-          key: "tags",
-          value: tags,
-        },
-        {
-          key: "recommendProduct",
-          value: recommendProduct,
-        },
-      ],
+      fields,
     },
   };
   try {
@@ -124,6 +155,7 @@ mutation UpsertMetaobject($handle: MetaobjectHandleInput!, $metaobject: Metaobje
       variables,
     });
     const { data, errors } = await response.json();
+    console.log("upsertImageSetting", response);
 
     if (errors && errors.length > 0) {
       console.error("GraphQL エラー:", errors);
@@ -136,8 +168,13 @@ mutation UpsertMetaobject($handle: MetaobjectHandleInput!, $metaobject: Metaobje
         { status: 400 },
       );
     }
-    // 成功した場合の処理（例: リダイレクト）
-    return true;
+    // 成功した場合の処理
+    // id を取得
+    const id = data.metaobjectUpsert.metaobject.id;
+    console.log("upsertImageSetting - success", data);
+    return {
+      id,
+    };
   } catch (error) {
     console.error("エラー:", error);
     return json({ error: "エラーが発生しました。" }, { status: 500 });
