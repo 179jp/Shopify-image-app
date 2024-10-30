@@ -91,7 +91,7 @@ export const loader = async ({ request }) => {
   const mediaObjectType = "image_settings";
   const imageSettingsResponse = await admin.graphql(`
     { 
-    metaobjects(type:"${mediaObjectType}", first: 100) {
+    metaobjects(type:"${mediaObjectType}", first: 250) {
       edges {
         node {
           id
