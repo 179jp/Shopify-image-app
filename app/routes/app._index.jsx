@@ -198,6 +198,8 @@ export default function Index() {
   const isLoading =
     ["loading", "submitting"].includes(fetcher.state) &&
     fetcher.formMethod === "POST";
+  const loadingText =
+    fetcher.state === "loading" ? "読み込み中です" : "保存しています";
   const productId = fetcher.data?.product?.id.replace(
     "gid://shopify/Product/",
     "",
@@ -261,6 +263,7 @@ export default function Index() {
       subtitle="ファイルに登録されている内容が表示されます"
       compactTitle
     >
+      {isLoading && <p>Loading...</p>}
       <div style={pageWrapStyle}>
         <div className="imageFilter">
           <fetcher.Form method="post">
@@ -317,6 +320,7 @@ export default function Index() {
           grid={gridSize}
         />
       </div>
+      {isLoading && <Loading text={loadingText} />}
     </Page>
   );
 }
