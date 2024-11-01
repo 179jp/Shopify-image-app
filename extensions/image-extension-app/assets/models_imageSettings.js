@@ -44,10 +44,7 @@ const variables = {
   after: null,
 };
 
-export const fetchImageSettings = async ({
-  endpoint,
-  storefrontAccessToken,
-}) => {
+const fetchImageSettings = async ({ endpoint, storefrontAccessToken }) => {
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
@@ -62,3 +59,5 @@ export const fetchImageSettings = async ({
   const { data } = await response.json();
   return data.metaobjects.edges;
 };
+
+module.exports = fetchImageSettings;

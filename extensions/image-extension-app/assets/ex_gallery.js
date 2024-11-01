@@ -6,7 +6,7 @@ const shopDomain = STOREFRONT_API_URL + ".myshopify.com"; // ショップのド�
 // GraphQL エンドポイント
 const endpoint = `https://${shopDomain}/api/${storefrontApiVersion}/graphql.json`;
 
-import { fetchImageSettings } from "models_imageSettings";
+const fetchImageSettings = require("./models_imageSettings.js");
 
-const images = await fetchImageSettings({ endpoint, storefrontAccessToken });
+const images = fetchImageSettings({ endpoint, storefrontAccessToken });
 console.log(images);
