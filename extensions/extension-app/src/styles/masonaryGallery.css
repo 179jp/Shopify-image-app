@@ -1,0 +1,95 @@
+.masonryGalleryWrap {
+  width: 100vw;
+  margin: 20px 0;
+  overflow-x: scroll;
+}
+
+.masonryLayout {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  align-items: stretch;
+  width: auto;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 400px;
+  min-width: 200px;
+  overflow: hidden;
+}
+
+.column.ex-big {
+  flex-basis: 350px; /* カラムの幅を広く */
+  flex-grow: 1; /* 幅に余裕があれば広げる */
+  min-width: 325px;
+}
+.column.big {
+  flex-basis: 300px; /* カラムの幅を広く */
+  flex-grow: 1; /* 幅に余裕があれば広げる */
+  min-width: 250px;
+}
+.column.big-thin {
+  flex-basis: 250px; /* カラムの幅を広く */
+  flex-grow: 1; /* 幅に余裕があれば広げる */
+}
+
+.column.medium,
+.column.medium-a,
+.column.medium-b {
+  flex-basis: 250px; /* カラムの幅を中程度に */
+  flex-grow: 1;
+}
+
+.column.medium-wide {
+  flex-basis: 300px; /* カラムの幅を中程度に */
+  flex-grow: 1;
+  min-width: 250px;
+}
+
+.column.medium-small {
+  flex-basis: 150px; /* カラムの幅を中程度に */
+  flex-grow: 1;
+}
+
+.column.small {
+  flex-basis: 150px; /* カラムの幅を小さめに */
+  flex-grow: 1;
+}
+
+.column img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.column.ex-big img,
+.column.big img,
+.column.big-thin img {
+  height: calc(100%);
+}
+
+.column.medium img,
+.column.medium-wide img {
+  height: calc((100% - 10px) / 2);
+}
+
+.column.medium-a img:nth-child(1) {
+  height: 60%;
+}
+.column.medium-a img:nth-child(2) {
+  height: calc(100% - 10px - 60%);
+}
+
+.column.medium-b img:nth-child(1) {
+  height: calc(100% - 10px - 60%);
+}
+.column.medium-b img:nth-child(2) {
+  height: 60%;
+}
+
+.column.small img {
+  height: calc((100% - 20px) / 3);
+}

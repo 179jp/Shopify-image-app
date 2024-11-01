@@ -1,0 +1,30 @@
+.masonry-layout {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px; /* 各カラムの間隔 */
+  padding: 10px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* カラム内の画像間隔 */
+}
+
+.column.big {
+  width: 300px;
+}
+
+.column.medium {
+  width: 200px;
+}
+
+.column.small {
+  width: 150px;
+}
+
+.column img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
