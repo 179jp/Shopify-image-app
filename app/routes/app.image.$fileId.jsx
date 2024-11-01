@@ -16,6 +16,7 @@ import { readCollections } from "../models/Collections.server.js";
 import { readFile } from "../models/File.server.js";
 import {
   readImageSetting,
+  updateImageSetting,
   upsertImageSetting,
 } from "../models/ImageSetting.server.js";
 import { readPatterns } from "../models/Patterns.server.js";
@@ -25,6 +26,7 @@ import {
   upsertProductOnImage,
 } from "../models/ProductOnImage.server.js";
 import { createTag, readTags } from "../models/Tags.server.js";
+import { publishApi } from "../models/Api.server.js";
 
 // Components
 import {
@@ -51,6 +53,7 @@ import { UnitTitle } from "../components/UnitTitle";
 import { ProductUnit } from "../components/ProductUnit";
 import { CheckBoxUnit } from "../components/CheckBoxUnit";
 import { ImageDetailPage } from "../components/ImageDetailPage";
+import { Loading } from "../components/Loading";
 import { ProductCards } from "../components/ProductCards";
 import { ProductImage } from "../components/ProductImage";
 import { ProductSelecter } from "../components/ProductSelecter";
@@ -105,15 +108,25 @@ export const loader = async ({ request, params }) => {
     );
     // すべての非同期処理が完了するまで待機し、結果を取得する
     productsOnImage = await Promise.all(productsOnImagePromises);
-    console.log(productsOnImage);
+    console.log("productsOnImage", productsOnImage);
   }
+  const image =
+    !imageSetting || !imageSetting.id
+      ? {
+          collections: [],
+          recommendProducts: [],
+          selectedTags: [],
+          patterns: [],
+          iproductsOnImage: [],
+        }
+      : imageSetting;
 
   return {
     collections,
     patterns,
     file,
     handle,
-    image: imageSetting,
+    image,
     products,
     productsOnImage,
     recommendProducts:
@@ -177,9 +190,10 @@ export const action = async ({ request }) => {
             tags,
           },
         });
-        console.log("result", result);
+
         // ProductOnImage の保存処理
         if (result && result.id && productsOnImage) {
+          const imageSettingId = result.id;
           const products = JSON.parse(productsOnImage);
           const upsertProductOnImagePromises = products.map((product) => {
             const productHandle =
@@ -188,7 +202,7 @@ export const action = async ({ request }) => {
               product.product.id.replace("gid://shopify/Product/", "");
             return upsertProductOnImage({
               admin,
-              imageSettingId: result.id,
+              imageSettingId,
               handle: productHandle,
               product,
             });
@@ -196,10 +210,23 @@ export const action = async ({ request }) => {
           // すべての非同期処理が完了するまで待機し、結果を取得する
           const upsertProductOnImageResult = await Promise.all(
             upsertProductOnImagePromises,
-          );
+          ).then((results) => {
+            const productOnImageIds = results.map((result) => result.id);
+            return updateImageSetting({
+              admin,
+              imageSetting: {
+                id: imageSettingId,
+                productsOnImage: JSON.stringify(productOnImageIds),
+              },
+            });
+          });
           if (upsertProductOnImageResult) {
-            const tags = await readTags({ admin });
-            return json({ tags });
+            // APIデータ書き出し
+            const publishResult = await publishApi({ admin });
+            if (publishResult) {
+              const tags = await readTags({ admin });
+              return json({ tags });
+            }
           } else {
             return json({
               message: "タグの追加に失敗しました",
@@ -239,6 +266,12 @@ export default function Image() {
     recommendProducts,
   } = useLoaderData();
   const { tags } = fetcher.data ?? useLoaderData();
+
+  const isLoading =
+    ["loading", "submitting"].includes(fetcher.state) &&
+    fetcher.formMethod === "POST";
+  const loadingText =
+    fetcher.state === "loading" ? "読み込み中です" : "保存しています";
 
   // 画像URLからファイル名と拡張子を取得する
   const fileName = file.image.originalSrc.split("/").pop();
@@ -362,7 +395,7 @@ export default function Image() {
       : null;
 
   // 選択している色柄
-  const [selectedPatterns, setSelectedPatterns] = useState([]);
+  const [selectedPatterns, setSelectedPatterns] = useState(image.patterns);
   const handlePatternsChange = useCallback(
     (selected) => {
       if (selectedPatterns.includes(selected)) {
@@ -374,7 +407,9 @@ export default function Image() {
     [selectedPatterns],
   );
   // 選択しているコレクション
-  const [selectedCollections, setSelectedCollections] = useState([]);
+  const [selectedCollections, setSelectedCollections] = useState(
+    image.collections,
+  );
   const handleCollectionChange = useCallback(
     (selected) => {
       if (selectedCollections.includes(selected)) {
@@ -387,8 +422,8 @@ export default function Image() {
     },
     [selectedCollections],
   );
-  // 選択している色柄
-  const [selectedTags, setSelectedTags] = useState([]);
+  // 選択している用途（タグ）
+  const [selectedTags, setSelectedTags] = useState(image.selectedTags);
   const handleTagsChange = useCallback(
     (selected) => {
       if (selectedTags.includes(selected)) {
@@ -597,6 +632,7 @@ export default function Image() {
           handlePopover={handlePopover.bind(null, "product", "product")}
         />
       </div>
+      {isLoading && <Loading text={loadingText} />}
     </Page>
   );
 }
