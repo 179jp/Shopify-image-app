@@ -1,0 +1,28 @@
+{% assign STOREFRONT = shop.metaobjects['storefront']['617926776-e-39716-b-2330322-fd-150541-d'] %}
+
+{% assign avg_rating = block.settings.product.metafields.demo.avg_rating.value | round %}
+<span style="color:{{ block.settings.colour }}">
+  {% render 'stars', rating: avg_rating %}
+</span>
+{% if avg_rating >= 4 %}
+  <br>
+  <img src="{{ "thumbs-up.png" | asset_img_url: '15x' }}" height="15" width="15" loading="lazy">
+  {{ 'ratings.home.recommendationText' | t }}
+{% endif %}
+
+<script>
+  const STOREFRONT_API_KEY = '{{ STOREFRONT.api_key }}';
+  const STOREFRONT_API_URL = '{{ STOREFRONT.url }}';
+</script>
+<script type="module" src="{{ 'ex_gallery.mjs' | asset_url }}" async></script>
+
+{% schema %}
+{
+  "name": "Extend Gallery",
+  "target": "section",
+  "settings": [
+    { "type": "product", "id": "product", "label": "product", "autofill": true },
+    { "type": "color", "id": "colour", "label": "Star Colour", "default": "#ff0000" }
+  ]
+}
+{% endschema %}
