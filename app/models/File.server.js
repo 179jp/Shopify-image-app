@@ -30,3 +30,23 @@ export const readFile = async ({ admin, queryFileId }) => {
   } = await response.json();
   return file;
 };
+
+/*
+metafields(first:10) {
+          nodes {
+            references {
+              nodes {
+                ... on Page {
+                  id
+                }
+                ... on Product {
+                  id
+                }
+                ... on Collection {
+                  id
+                }
+              }
+            }
+          }
+        }
+*/

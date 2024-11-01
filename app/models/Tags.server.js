@@ -1,7 +1,7 @@
 export const readTags = async ({ admin }) => {
   const tagsResponse = await admin.graphql(`
     {
-      metaobjects(type: "image_tag",first: 100) {
+      metaobjects(type: "image_tag",first: 250) {
         edges {
           node {
             id
@@ -21,6 +21,56 @@ export const readTags = async ({ admin }) => {
     return {
       id: node.id,
       name: node.name.value,
+    };
+  });
+  return tags;
+};
+
+export const readTagsWithReferencedBy = async ({ admin }) => {
+  const tagsResponse = await admin.graphql(`
+    {
+      metaobjects(type: "image_tag",first: 250) {
+        edges {
+          node {
+            id
+            handle
+            name: field(key: "name") {
+              value
+            }
+            parent: field(key: "parent") {
+              value
+            }
+            referencedBy(first:250) {
+              edges {
+                node {
+                  referencer {
+                    __typename
+                    ... on Metaobject {
+                      id
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }`);
+  const {
+    data: {
+      metaobjects: { edges },
+    },
+  } = await tagsResponse.json();
+  const tags = edges.map(({ node }) => {
+    const referencedIds = node.referencedBy.edges.map(({ node }) => {
+      return node.referencer.id;
+    });
+    return {
+      id: node.id,
+      handle: node.handle,
+      name: node.name.value,
+      parent: node.parent.value,
+      referencedIds,
     };
   });
   return tags;
