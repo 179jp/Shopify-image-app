@@ -4,6 +4,56 @@
 import { json } from "@remix-run/node";
 import { JsonFormat } from "./JsonFormat";
 
+export const readImageSettingsWithReference = async ({ admin }) => {
+  const mediaObjectType = "image_settings";
+  const imageSettingsResponse = await admin.graphql(`
+    { 
+    metaobjects(type:"${mediaObjectType}", first: 250) {
+      edges {
+        node {
+          id
+          type
+          handle
+          fields {
+            key
+            value
+            type
+            reference {
+              __typename
+              ... on Product {
+                id
+                title
+              }
+              ... on Collection {
+                id
+                title
+              }
+              ... on MediaImage {
+                id
+                preview {
+                  image {
+                    url
+                    altText
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }`);
+  const {
+    data: {
+      metaobjects: { edges: imageSettings },
+    },
+  } = await imageSettingsResponse.json();
+
+  // ToDo:
+  // imageSettings の整形
+  return imageSettings;
+};
+
 export const readImageSetting = async ({ admin, handle }) => {
   const response = await admin.graphql(`
 { 
@@ -47,6 +97,9 @@ const formatImageSetting = (imageSetting) => {
   const selectedTags = imageSetting.fields.find(
     (field) => field.key === "tags",
   );
+  const patterns = imageSetting.fields.find(
+    (field) => field.key === "patterns",
+  );
   const productsOnImage = imageSetting.fields.find(
     (field) => field.key === "products_on_image",
   );
@@ -62,6 +115,7 @@ const formatImageSetting = (imageSetting) => {
         : [],
     selectedTags:
       selectedTags && selectedTags.value ? JSON.parse(selectedTags.value) : [],
+    patterns: patterns && patterns.value ? JSON.parse(patterns.value) : [],
     productsOnImage:
       productsOnImage && productsOnImage.value
         ? JSON.parse(productsOnImage.value)
@@ -146,6 +200,69 @@ mutation UpsertMetaobject($handle: MetaobjectHandleInput!, $metaobject: Metaobje
           status: "ACTIVE",
         },
       },
+      fields,
+    },
+  };
+  try {
+    // API リクエストを送信
+    const response = await admin.graphql(mutation, {
+      variables,
+    });
+    const { data, errors } = await response.json();
+    console.log("upsertImageSetting", response);
+
+    if (errors && errors.length > 0) {
+      console.error("GraphQL エラー:", errors);
+      return json({ errors }, { status: 400 });
+    }
+    if (data.metaobjectUpsert.userErrors.length > 0) {
+      console.error("ユーザーエラー:", data.metaobjectUpsert.userErrors);
+      return json(
+        { errors: data.metaobjectUpsert.userErrors },
+        { status: 400 },
+      );
+    }
+    // 成功した場合の処理
+    // id を取得
+    const id = data.metaobjectUpsert.metaobject.id;
+    console.log("upsertImageSetting - success", data);
+    return {
+      id,
+    };
+  } catch (error) {
+    console.error("エラー:", error);
+    return json({ error: "エラーが発生しました。" }, { status: 500 });
+  }
+};
+
+export const updateImageSetting = async ({ admin, imageSetting }) => {
+  const { id, productsOnImage } = imageSetting;
+  const mutation = `
+mutation UpdateMetaobject($id: ID!, $metaobject: MetaobjectUpdateInput!) {
+    metaobjectUpdate(id: $id, metaobject: $metaobject) {
+      metaobject {
+        id
+        products_on_image: field(key: "products_on_image") {
+          value
+        }
+      }
+      userErrors {
+        field
+        message
+        code
+      }
+    }
+  }`;
+  const fields = [
+    {
+      key: "products_on_image",
+      value: productsOnImage,
+    },
+  ];
+
+  const variables = {
+    id,
+    metaobject: {
       fields,
     },
   };
