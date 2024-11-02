@@ -1,0 +1,38 @@
+.checkboxUnitWrap {
+  background-color: rgba(0, 0, 0, 0.01);
+  border: 1px solid #eee;
+  border-radius: 8px;
+  box-shadow: 0rem 0rem 0rem 0.0625rem rgba(0, 0, 0, 0.08) inset;
+  width: 100%;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.checkboxList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.checkboxList.column {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.checkboxUnit_label {
+  align-items: center;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  display: flex;
+  gap: 4px;
+  padding: 4px 8px;
+  transition: all 0.25s;
+  background: rgba(255, 255, 255, 0.2);
+}
+.checkboxUnit_label:hover {
+  background-color: #fff;
+}
+.checkboxUnit_label:has(input:checked) {
+  background-color: #111;
+  color: #fff;
+}

@@ -1,0 +1,79 @@
+.bulkActionPanel {
+  position: sticky;
+  bottom: -200px;
+
+  width: calc(100% - var(--p-space-600) * 2);
+  margin: var(--p-space-600) auto;
+  padding: var(--p-space-600);
+  background-color: var(--p-color-nav-bg);
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0rem -0.125rem 0.25rem 0rem rgba(26, 26, 26, 0.07);
+
+  transition: bottom 0.3s ease-out;
+}
+.bulkActionPanel.show {
+  bottom: 0;
+}
+
+.bulkActionPanel_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.bulkActionPanel_label {
+  font-weight: bold;
+}
+.bulkActionPanel_labelNum {
+  font-size: 2rem;
+  padding-right: 0.25em;
+}
+.bulkActionPanel_expandButton {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  background-color: var(--p-color-bg);
+  border: 1px solid #e9e9e9;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.bulkActionPanel_input {
+  display: none;
+
+  width: 100%;
+  margin: var(--p-space-600) auto var(--p-space-600);
+  padding: 0;
+  border-radius: 10px;
+}
+.bulkActionPanel_input.show {
+  display: block;
+}
+
+.bulkActionPanel_inputColumns {
+  display: grid;
+  grid-template-columns: 1.5fr 1.5fr 1fr 1fr;
+  gap: var(--p-space-300);
+  margin-bottom: var(--p-space-600);
+}
+.bulkActionPanel_inputColumn {
+  background-color: rgb(248, 248, 248);
+  border-radius: 10px;
+  box-shadow: 0rem 0.125rem 0.25rem 0rem rgba(26, 26, 26, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-space-300);
+  padding: var(--p-space-300);
+}
+.bulkActionPanel_inputColumn dt {
+  font-weight: bold;
+}
+.bulkActionPanel_inputColumn dd {
+  position: relative;
+  height: 400px;
+}
+
+.bulkActionPanel_submit {
+  display: flex;
+  justify-content: flex-end;
+}

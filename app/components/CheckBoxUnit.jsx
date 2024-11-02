@@ -1,71 +1,35 @@
-import { list } from "isbot";
-import React from "react";
-
-const Wrapper = ({ children }) => {
-  const wrapperStyle = {
-    backgroundColor: "rgba(0,0,0,.01)",
-    border: "1px solid #eee",
-    borderRadius: "8px",
-    boxShadow: "0rem 0rem 0rem .0625rem rgba(0, 0, 0, .08) inset",
-    width: "100%",
-    maxHeight: "200px",
-    overflowY: "auto",
-    padding: "8px",
-  };
-
-  return <div style={wrapperStyle}>{children}</div>;
-};
-
-const listStyle = {
-  display: "flex",
-  flexDirection: "column",
-};
+import "./css/checkboxUnit.css";
 
 const columnStyle = {
   display: "grid",
   gridTemplateColumns: "repeat(2, 1fr)",
 };
 
-const Label = ({ isSmall, children }) => {
-  const [hover, setHover] = React.useState(false);
-
-  const labelStyle = {
-    alignItems: "center",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: isSmall ? ".7rem" : ".8125rem",
-    display: "flex",
-    justifyContent: "flex-start",
-    gap: "4px",
-    padding: "4px 8px",
-    transition: "all .8s",
-    backgroundColor: hover ? "#fff" : "transparent",
+export const CheckBoxUnit = ({
+  items,
+  selected,
+  type,
+  changeHandler,
+  forBulkPanel = false,
+}) => {
+  const wrapperStyle = {
+    maxHeight: forBulkPanel ? "400px" : "200px",
   };
 
   return (
-    <label
-      style={labelStyle}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-    >
-      {children}
-    </label>
-  );
-};
-
-export const CheckBoxUnit = ({ items, selected, type, changeHandler }) => {
-  const listClass = type === "colors" ? columnStyle : listStyle;
-  return (
-    <Wrapper>
-      <ul style={listClass}>
+    <div className="checkboxUnitWrap" style={wrapperStyle}>
+      <ul className={`checkboxList ${type === "colors" ? "column" : ""}`}>
         {items.map((item) => {
+          const checked = selected.includes(item.id);
           return (
             <li key={item.id}>
-              <Label isSmall={type === "colors"}>
+              <label
+                className={`checkboxUnit_label ${type === "colors" ? "isSmall" : ""}`}
+              >
                 <input
                   type="checkbox"
                   name={`${type}`}
-                  checked={selected.includes(item.id)}
+                  checked={checked}
                   onChange={(e) => {
                     changeHandler(e.target.value);
                   }}
@@ -73,11 +37,11 @@ export const CheckBoxUnit = ({ items, selected, type, changeHandler }) => {
                 />
                 {type === "tags" || type === "colors" ? item.name : item.title}
                 {type === "collections" && `(${item.products.nodes.length})`}
-              </Label>
+              </label>
             </li>
           );
         })}
       </ul>
-    </Wrapper>
+    </div>
   );
 };

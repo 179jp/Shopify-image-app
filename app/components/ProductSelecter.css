@@ -2,22 +2,42 @@
   background-color: rgba(255, 255, 255, 0.6);
   border-radius: 10px 10px 0 0;
   display: flex;
+  justify-content: flex-start;
   gap: 10px;
-  padding: 15px 10px;
+  padding: 10px;
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
 }
+.productFilter .Polaris-Icon {
+  margin: 0;
+}
 
 .productsListWrapper {
-  width: 600px;
+  width: 100%;
   height: 100%;
-  max-height: calc(70vh - 100px);
-  margin: 52px 0;
+  max-height: calc(400px - 45px);
+  margin: 45px 0 0;
   overflow-y: scroll;
   padding: 0 10px 52px;
+
+  background-color: rgba(0, 0, 0, 0.01);
+  border: 1px solid #eee;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0rem 0rem 0rem 0.0625rem rgba(0, 0, 0, 0.08) inset;
 }
+.productsListWrapper.isPopover {
+  width: 600px;
+  max-height: calc(70vh - 100px);
+  margin: 52px 0;
+
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 .productsList {
   display: flex;
   flex-direction: column;

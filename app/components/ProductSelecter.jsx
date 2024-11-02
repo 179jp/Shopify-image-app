@@ -4,12 +4,21 @@ import { Button, ButtonGroup, Icon, Thumbnail } from "@shopify/polaris";
 import { CaretDownIcon, NoteIcon, SearchIcon } from "@shopify/polaris-icons";
 
 import "./ProductSelecter.css";
+const iconStyle = {
+  display: "block",
+  height: "1rem",
+  width: "1rem",
+  maxHeight: "100%",
+  maxWidth: "100%",
+  margin: "0",
+};
 
 export const ProductSelecter = ({
   products,
   selected,
   onSelectChange,
   handlePopover,
+  isPopover = true,
 }) => {
   const [showList, setShowList] = useState(false);
   const [search, setSearch] = useState("");
@@ -22,10 +31,13 @@ export const ProductSelecter = ({
   }, [showList]);
 
   const handleSelectedProducts = (product) => {
-    if (selectedProducts.includes(product)) {
+    if (selectedProducts.includes(product.id)) {
       setSelectedProducts(selectedProducts.filter((id) => id !== product.id));
     } else {
       setSelectedProducts([...selectedProducts, product.id]);
+    }
+    if (!isPopover) {
+      onSelectChange(product.id);
     }
   };
 
@@ -42,7 +54,6 @@ export const ProductSelecter = ({
   );
 
   const handleSubmit = useCallback(() => {
-    console.log("handleSubmit", selectedProducts);
     onSelectChange(
       products.filter((product) => selectedProducts.includes(product.id)),
     );
@@ -50,13 +61,15 @@ export const ProductSelecter = ({
   });
 
   return (
-    <div className={`product-selecter-wrap showList`}>
+    <div
+      className={`product-selecter-wrap showList ${isPopover ? "isPopover" : ""}`}
+    >
       <p className="selected-product" onClick={handleShowList}>
         {selected.name}
       </p>
       <div>
         <div className="productFilter">
-          <Icon source={SearchIcon} color="inkLighter" />
+          <Icon source={SearchIcon} color="inkLighter" style={iconStyle} />
           <input type="text" onChange={handleProductSearch} />
         </div>
         <div className="productsListWrapper">
@@ -88,12 +101,14 @@ export const ProductSelecter = ({
             })}
           </ul>
         </div>
-        <ButtonGroup className="productSelecterButtons">
-          <Button onClick={handlePopover}>キャンセル</Button>
-          <Button variant="primary" onClick={handleSubmit}>
-            決定
-          </Button>
-        </ButtonGroup>
+        {isPopover && (
+          <ButtonGroup className="productSelecterButtons">
+            <Button onClick={handlePopover}>キャンセル</Button>
+            <Button variant="primary" onClick={handleSubmit}>
+              決定
+            </Button>
+          </ButtonGroup>
+        )}
       </div>
     </div>
   );
