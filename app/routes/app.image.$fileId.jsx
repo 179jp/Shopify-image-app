@@ -183,7 +183,7 @@ export const action = async ({ request }) => {
           imageSetting: {
             imageId,
             collections,
-            productsOnImage: productIdsOnImage,
+            products: productIdsOnImage,
             fileId,
             patterns,
             recommendProduct,

@@ -1,7 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
 import { json } from "@remix-run/node";
-import { useFetcher } from "@remix-run/react";
+import { useFetcher, redirect } from "@remix-run/react";
+
+// Models
+import { readCollections } from "../models/Collections.server.js";
+import { readFiles, searchFiles } from "../models/File.server.js";
+import {
+  readImageSettingsWithReference,
+  updateImageSetting,
+  upsertImageSetting,
+} from "../models/ImageSetting.server.js";
+import { readPatterns } from "../models/Patterns.server.js";
+import { readProducts } from "../models/Products.server.js";
+import { upsertProductOnImage } from "../models/ProductOnImage.server.js";
+import { readTags } from "../models/Tags.server.js";
+import { publishApi } from "../models/Api.server.js";
+
+// Components
 import {
   Icon,
   Page,
@@ -24,13 +39,12 @@ import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { useLoaderData } from "react-router-dom";
 import { authenticate } from "../shopify.server";
 
+import { BulkPanel } from "../components/BulkPanel.jsx";
 import { ImagesCards } from "../components/ImageCards";
-import { ImageDetailPage } from "../components/ImageDetailPage";
-
-import prisma from "../db.server";
+import { Loading } from "../components/Loading";
 
 import "../components/default.css";
-import "../components/imageFilter.css";
+import "../components/css/images.css";
 import { boxShadowLv2 } from "../components-styled/config";
 
 const pageWrapStyle = {
@@ -42,154 +56,148 @@ const pageWrapStyle = {
 
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
-  const filesResponse = await admin.graphql(`
-    {
-      files(first: 250) {
-        nodes {
-          id
-          createdAt
-            ... on MediaImage {
-              id
-              image {
-                id
-                originalSrc
-                width
-                height
-              }
-            }
-        }
-      }
-    }`);
-  const {
-    data: {
-      files: { nodes },
-    },
-  } = await filesResponse.json();
+  // ファイルを取得する
+  const files = await readFiles({ admin, first: 250 });
+
   // コレクションを取得する
-  const collectionResponse = await admin.graphql(`
-    {
-      collections(first: 200) {
-        nodes {
-          id
-          title
-          products(first: 50) {
-            nodes {
-              id
-              title
-            }
-          }
-        }
-      }
-    }`);
-  const {
-    data: {
-      collections: { nodes: collections },
-    },
-  } = await collectionResponse.json();
+  const collections = await readCollections({ admin });
+  // 色柄の情報を取得する
+  const patterns = await readPatterns({ admin });
+  // タグ情報を取得する
+  const tags = await readTags({ admin });
+  // 商品情報を取得する
+  const products = await readProducts({ admin });
 
   // MediaObeject の image_settings を取得する
-  const mediaObjectType = "image_settings";
-  const imageSettingsResponse = await admin.graphql(`
-    { 
-    metaobjects(type:"${mediaObjectType}", first: 250) {
-      edges {
-        node {
-          id
-          type
-          handle
-          fields {
-            key
-            value
-            type
-            reference {
-              __typename
-              ... on Product {
-                id
-                title
-              }
-              ... on Collection {
-                id
-                title
-              }
-            }
-          }
-        }
-      }
-    }
-  }`);
-  const {
-    data: {
-      metaobjects: { edges: imageSettings },
-    },
-  } = await imageSettingsResponse.json();
+  const imageSettings = await readImageSettingsWithReference({ admin });
 
   return json({
-    files: nodes,
+    collections,
+    files,
     images: imageSettings,
+    patterns,
+    products,
+    tags,
   });
 };
 
 export const action = async ({ request }) => {
-  // URL から filter を取得する
-  const body = await request.formData();
-  const filterName = body.get("name");
-  const sortBy = body.get("sortBy") ? body.get("sortBy") : "first";
+  const method = request.method;
+  if (method === "GET") {
+    // URL から filter を取得する
+    const body = await request.formData();
+    const filterName = body.get("name");
+    const sortBy = body.get("sortBy") ? body.get("sortBy") : "first";
 
-  const isSortReverse = sortBy === "last" ? true : false;
-  const filenameQuery = filterName ? `filename:${filterName}` : "";
-  const { admin } = await authenticate.admin(request);
-  const filesResponse = await admin.graphql(`
-    {
-      files(first: 100, sortKey: CREATED_AT, reverse: ${isSortReverse}, query: "${filenameQuery}") {
-        nodes {
-          id
-          createdAt
-            ... on MediaImage {
-              id
-              image {
-                id
-                originalSrc
-                width
-                height
-              }
-            }
-        }
-      }
-    }`);
-  const {
-    data: {
-      files: { nodes },
-    },
-  } = await filesResponse.json();
-  // コレクションを取得する
-  const collectionResponse = await admin.graphql(`
-    {
-      collections(first: 200) {
-        nodes {
-          id
-          title
-          products(first: 50) {
-            nodes {
-              id
-              title
-            }
-          }
-        }
-      }
-    }`);
-  const {
-    data: {
-      collections: { nodes: collections },
-    },
-  } = await collectionResponse.json();
+    const isSortReverse = sortBy === "last" ? true : false;
+    const filenameQuery = filterName ? `filename:${filterName}` : "";
+    const { admin } = await authenticate.admin(request);
+    // ファイルの検索
+    const files = await searchFiles({ admin, filenameQuery, isSortReverse });
 
-  // DB から images を取得
-  // const images = await prisma.image.findMany();
-  const images = await prisma.Image.findMany();
-  return json({
-    files: nodes,
-    images,
+    return json({
+      files,
+    });
+  } else if (method === "POST") {
+    console.log("Bulk Change - POST");
+    const body = await request.formData();
+    const ids = JSON.parse(body.get("ids"));
+    const productIds = JSON.parse(body.get("productIdsOnImage"));
+    const productIdsOnImage = body.get("productIdsOnImage");
+    const collections = body.get("collections");
+    const patterns = body.get("patterns");
+    const tags = body.get("tags");
+
+    if (!ids && ids.length === 0)
+      return json({ message: "No files selected" }, { status: 400 });
+
+    const { admin } = await authenticate.admin(request);
+
+    // idごとに更新
+    const upsertPromises = ids.map((id) => {
+      return upsertData({
+        admin,
+        data: {
+          id,
+          productIds,
+          productIdsOnImage,
+          collections,
+          patterns,
+          tags,
+        },
+      });
+    });
+    // 全て更新が完了したら API 書き出し
+    const upsertResult = await Promise.all(upsertPromises).then((results) => {
+      return true;
+    });
+    if (upsertResult) {
+      // APIデータ書き出し
+      const publishResult = await publishApi({ admin });
+      if (publishResult) {
+        return redirect(request.url);
+      }
+    }
+  }
+};
+
+const upsertData = async ({ admin, data }) => {
+  const { id, productIds, productIdsOnImage, collections, patterns, tags } =
+    data;
+  // handle
+  const handle = "image_" + id.replace("gid://shopify/MediaImage/", "");
+  // imageSettingのupsert
+  const result = await upsertImageSetting({
+    admin,
+    imageSetting: {
+      imageId: handle,
+      collections,
+      products: productIdsOnImage,
+      fileId: id,
+      patterns,
+      recommendProduct: null,
+      tags,
+    },
   });
+  // ProductOnImage の保存処理
+  if (result && result.id && productIds && productIds.length > 0) {
+    const imageSettingId = result.id;
+    const upsertProductOnImagePromises = productIds.map((productId) => {
+      const productHandle =
+        handle.replace("image_", "") +
+        "-" +
+        productId.replace("gid://shopify/Product/", "");
+      // 一括登録の場合、x, y は固定値（画像中央）
+      const productData = {
+        x: 50,
+        y: 50,
+        product: {
+          id: productId,
+        },
+      };
+      return upsertProductOnImage({
+        admin,
+        imageSettingId,
+        handle: productHandle,
+        product: productData,
+      });
+    });
+    const upsertProductOnImageResult = await Promise.all(
+      upsertProductOnImagePromises,
+    ).then((results) => {
+      const productOnImageIds = results.map((result) => result.id);
+      return updateImageSetting({
+        admin,
+        imageSetting: {
+          id: imageSettingId,
+          productsOnImage: JSON.stringify(productOnImageIds),
+        },
+      });
+    });
+    if (upsertProductOnImageResult) return true;
+  } else if (!productIdsOnImage || productIdsOnImage.length === 0) {
+    return true;
+  }
 };
 
 export default function Index() {
@@ -207,7 +215,6 @@ export default function Index() {
 
   // Filter
   const [fileSort, setFileSort] = useState("first");
-  const [fileName, setFileName] = useState(null);
   const handleFilterChange = (e) => {
     const formData = new FormData(e.currentTarget);
     const newQuery = {
@@ -218,43 +225,41 @@ export default function Index() {
     // 更新されたクエリでリクエストを送信
     submit(newQuery, { method: "get", action: "" });
   };
+  // Grid size
+  const [gridSize, setGridSize] = useState("normal");
+  // Data
+  const { collections, tags, patterns, products } = useLoaderData();
+  const { files, images } = fetcher.data ?? useLoaderData();
 
-  const { files, collections, images } = fetcher.data ?? useLoaderData();
-
-  const [selectedFile, setSelectedFile] = useState(null);
-  const handleSelection = useCallback((file) => {
-    if (!file) {
-      setSelectedFile(null);
-      return;
-    }
-    // 画像URLからファイル名と拡張子を取得する
-    const fileName = file.image.originalSrc.split("/").pop();
-    const [name, ext_string] = fileName.split(".");
-    let ext = ext_string;
-    // 拡張子に ? が含まれている場合、? 以降を除去する。同時に大文字に変換する
-    if (ext.includes("?")) {
-      ext = ext.split("?")[0].toUpperCase();
-    } else {
-      ext = ext.toUpperCase();
-    }
-    // images にデータがあれば、それをセットする
-    const imageData = images.find((image) => image.fileId === file.id);
-    file.ext = ext;
-    file.name = name;
-    file.imageData = imageData;
-    setSelectedFile(file);
+  // ファイルの選択
+  const [selectedImages, setSelectedImages] = useState([]);
+  const handleSelection = useCallback((fileId) => {
+    setSelectedImages((prev) => {
+      if (prev.includes(fileId)) {
+        return prev.filter((id) => id !== fileId);
+      }
+      return [...prev, fileId];
+    });
   });
 
-  const isDetailPage = selectedFile && selectedFile.image ? true : false;
-
-  useEffect(() => {
-    if (productId) {
-      shopify.toast.show("Product created");
-    }
-  }, [productId, shopify]);
-  const generateProduct = () => fetcher.submit({}, { method: "POST" });
-
-  const [gridSize, setGridSize] = useState("normal");
+  // 一括操作
+  const handleBulkChange = ({ products, collections, patterns, tags }) => {
+    console.log("Bulk Change");
+    fetcher.submit(
+      {
+        ids: JSON.stringify(selectedImages),
+        productIdsOnImage:
+          products.length > 0 ? JSON.stringify(products) : null,
+        collections:
+          collections.length > 0 ? JSON.stringify(collections) : null,
+        patterns: patterns.length > 0 ? JSON.stringify(patterns) : null,
+        tags: tags.length > 0 ? JSON.stringify(tags) : null,
+      },
+      {
+        method: "POST",
+      },
+    );
+  };
 
   return (
     <Page
@@ -320,6 +325,14 @@ export default function Index() {
           grid={gridSize}
         />
       </div>
+      <BulkPanel
+        selectedImages={selectedImages}
+        collections={collections}
+        patterns={patterns}
+        products={products}
+        tags={tags}
+        handleBulkChange={handleBulkChange}
+      />
       {isLoading && <Loading text={loadingText} />}
     </Page>
   );
