@@ -4,11 +4,11 @@
 
 const query = `
 {
-  collections(first: 200) {
+  collections(first: 250) {
     nodes {
       id
       title
-      products(first: 50) {
+      products(first: 250) {
         nodes {
           id
           title

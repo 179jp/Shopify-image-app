@@ -4,11 +4,16 @@
 import { json } from "@remix-run/node";
 import { JsonFormat } from "./JsonFormat";
 
-export const readImageSettingsWithReference = async ({ admin }) => {
+export const readImageSettingsWithReference = async ({
+  admin,
+  first = 250,
+  after = null,
+}) => {
   const mediaObjectType = "image_settings";
+  const pager = after ? `, after: "${after}"` : "";
   const imageSettingsResponse = await admin.graphql(`
     { 
-    metaobjects(type:"${mediaObjectType}", first: 250) {
+    metaobjects(type:"${mediaObjectType}", first: ${first}${pager}) {
       edges {
         node {
           id
@@ -127,7 +132,7 @@ export const upsertImageSetting = async ({ admin, imageSetting }) => {
   const {
     collections,
     imageId,
-    productsOnImage,
+    products,
     fileId,
     patterns,
     recommendProduct,
@@ -161,23 +166,31 @@ mutation UpsertMetaobject($handle: MetaobjectHandleInput!, $metaobject: Metaobje
       key: "image",
       value: fileId,
     },
-    {
+  ];
+  if (patterns && patterns != "null" && patterns.length > 0) {
+    fields.push({
       key: "patterns",
       value: patterns,
-    },
-    {
+    });
+  }
+  if (collections && collections != "null" && collections.length > 0) {
+    fields.push({
       key: "collections",
       value: collections,
-    },
-    {
+    });
+  }
+  if (tags && tags != "null" && tags.length > 0) {
+    fields.push({
       key: "tags",
       value: tags,
-    },
-    {
+    });
+  }
+  if (products && products != "null" && products.length > 0) {
+    fields.push({
       key: "products",
-      value: productsOnImage,
-    },
-  ];
+      value: products,
+    });
+  }
   if (
     recommendProduct &&
     recommendProduct != "null" &&
@@ -278,16 +291,16 @@ mutation UpdateMetaobject($id: ID!, $metaobject: MetaobjectUpdateInput!) {
       console.error("GraphQL エラー:", errors);
       return json({ errors }, { status: 400 });
     }
-    if (data.metaobjectUpsert.userErrors.length > 0) {
-      console.error("ユーザーエラー:", data.metaobjectUpsert.userErrors);
+    if (data.metaobjectUpdate.userErrors.length > 0) {
+      console.error("ユーザーエラー:", data.metaobjectUpdate.userErrors);
       return json(
-        { errors: data.metaobjectUpsert.userErrors },
+        { errors: data.metaobjectUpdate.userErrors },
         { status: 400 },
       );
     }
     // 成功した場合の処理
     // id を取得
-    const id = data.metaobjectUpsert.metaobject.id;
+    const id = data.metaobjectUpdate.metaobject.id;
     console.log("upsertImageSetting - success", data);
     return {
       id,
