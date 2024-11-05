@@ -83,9 +83,14 @@ export const loader = async ({ request }) => {
 
 export const action = async ({ request }) => {
   const method = request.method;
-  if (method === "GET") {
+  const body = await request.formData();
+  console.log(method);
+  if (
+    method === "GET" ||
+    (method === "POST" && body.get("mode") === "filter")
+  ) {
+    console.log("- GET");
     // URL から filter を取得する
-    const body = await request.formData();
     const filterName = body.get("name");
     const sortBy = body.get("sortBy") ? body.get("sortBy") : "first";
 
@@ -100,7 +105,6 @@ export const action = async ({ request }) => {
     });
   } else if (method === "POST") {
     console.log("Bulk Change - POST");
-    const body = await request.formData();
     const ids = JSON.parse(body.get("ids"));
     const productIds = JSON.parse(body.get("productIdsOnImage"));
     const productIdsOnImage = body.get("productIdsOnImage");
@@ -218,12 +222,13 @@ export default function Index() {
   const handleFilterChange = (e) => {
     const formData = new FormData(e.currentTarget);
     const newQuery = {
+      mode: "filter",
       name: formData.get("name") || "",
       sortBy: formData.get("sortBy") || "",
     };
 
     // 更新されたクエリでリクエストを送信
-    submit(newQuery, { method: "get", action: "" });
+    submit(newQuery, { method: "POST", action: "" });
   };
   // Grid size
   const [gridSize, setGridSize] = useState("normal");
@@ -268,10 +273,10 @@ export default function Index() {
       subtitle="ファイルに登録されている内容が表示されます"
       compactTitle
     >
-      {isLoading && <p>Loading...</p>}
       <div style={pageWrapStyle}>
         <div className="imageFilter">
-          <fetcher.Form method="post">
+          <fetcher.Form method="POST">
+            <input type="hidden" name="mode" value="filter" />
             <ul className="imageFilter_params">
               <li>
                 <Icon source={SearchIcon} tone="base" />
@@ -287,6 +292,7 @@ export default function Index() {
                       setFileSort(e.target.value);
                       fetcher.submit(
                         {
+                          mode: "filter",
                           sortBy: e.target.value,
                         },
                         {
