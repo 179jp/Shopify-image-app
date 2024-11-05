@@ -32,13 +32,13 @@ function App({ mode, handle }) {
           imageIds = [...new Set(imageIds.concat(tag.referencedIds))];
         });
         // 画像を取得
-        // const result = await fetchImageSettings();
-        // const images = result.filter((image) => imageIds.includes(image.id));
-        // setImages(images);
-        // setFilteredImages(images);
-        const dammyImages = await generateDammyImages(60);
-        setImages(dammyImages);
-        setFilteredImages(dammyImages);
+        const result = await fetchImageSettings();
+        const images = result.filter((image) => imageIds.includes(image.id));
+        setImages(images);
+        setFilteredImages(images);
+        // const dammyImages = await generateDammyImages(60);
+        // setImages(dammyImages);
+        // setFilteredImages(dammyImages);
       } catch (error) {
         console.error("Error fetching image settings:", error);
       }
