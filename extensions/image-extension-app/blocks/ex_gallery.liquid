@@ -3,8 +3,6 @@
 {{ 'index-B-mLdKKm.css' | asset_url | stylesheet_tag: preload: true }}
 <noscript>{{ 'index-B-mLdKKm.css' | asset_url | stylesheet_tag }}</noscript>
 
-{% comment %} Section title and description {% endcomment %}{% render 'dynamic-section-header' with section_title: section.settings.title, section_description: section.settings.description, wrapper_classes: wrapper_classes %}
-
 <div id="extendGalleryAppRoot" data-mode={{ section.settings.gallery_mode }} data-handle={{ section.settings.gallery_handle }}></div>
 
 <script>
