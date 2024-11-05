@@ -18,7 +18,8 @@
   cursor: pointer;
 }
 .galleryTag.selected {
-  background-color: #f0f0f0;
+  background-color: #333;
+  color: #f0f0f0;
   font-size: 0.8em;
   font-weight: bold;
 }

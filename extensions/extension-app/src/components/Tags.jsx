@@ -1,13 +1,13 @@
 import "../styles/Tags.css";
 
-export const Tags = ({ handle, tags, onClick }) => {
+export const Tags = ({ handle, tags, handleTagClick, selectedTag }) => {
   return (
-    <div className="galleryTags">
+    <div className={`galleryTags`}>
       {tags.map((tag) => (
         <button
-          className="galleryTag"
+          className={`galleryTag ${tag.id === selectedTag ? "selected" : ""}`}
           key={tag.id}
-          onClick={() => onClick(tag)}
+          onClick={() => handleTagClick(tag)}
         >
           {tag.handle === handle ? `すべて` : tag.name}
         </button>

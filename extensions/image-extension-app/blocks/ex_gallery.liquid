@@ -1,28 +1,65 @@
 {% assign STOREFRONT = shop.metaobjects['storefront']['617926776-e-39716-b-2330322-fd-150541-d'] %}
 
-{% assign avg_rating = block.settings.product.metafields.demo.avg_rating.value | round %}
-<span style="color:{{ block.settings.colour }}">
-  {% render 'stars', rating: avg_rating %}
-</span>
-{% if avg_rating >= 4 %}
-  <br>
-  <img src="{{ "thumbs-up.png" | asset_img_url: '15x' }}" height="15" width="15" loading="lazy">
-  {{ 'ratings.home.recommendationText' | t }}
-{% endif %}
+{{ 'index-B-mLdKKm.css' | asset_url | stylesheet_tag: preload: true }}
+<noscript>{{ 'index-B-mLdKKm.css' | asset_url | stylesheet_tag }}</noscript>
+
+{% comment %} Section title and description {% endcomment %}{% render 'dynamic-section-header' with section_title: section.settings.title, section_description: section.settings.description, wrapper_classes: wrapper_classes %}
+
+<div id="extendGalleryAppRoot" data-mode={{ section.settings.gallery_mode }} data-handle={{ section.settings.gallery_handle }}></div>
 
 <script>
   const STOREFRONT_API_KEY = '{{ STOREFRONT.api_key }}';
   const STOREFRONT_API_URL = '{{ STOREFRONT.url }}';
 </script>
-<script src="{{ 'ex_gallery.js' | asset_url }}" async></script>
+<script src="{{ 'index-B1rphbif.js' | asset_url }}" async></script>
 
 {% schema %}
 {
   "name": "Extend Gallery",
   "target": "section",
   "settings": [
-    { "type": "product", "id": "product", "label": "product", "autofill": true },
-    { "type": "color", "id": "colour", "label": "Star Colour", "default": "#ff0000" }
+    {
+      "type": "inline_richtext",
+      "id": "title",
+      "label": "t:all.Heading"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "t:all.Description"
+    },
+    {
+      "type": "select",
+      "id": "gallery_handle",
+      "label": "ギャラリー",
+      "default": "top",
+      "options": [
+        {
+          "value": "top",
+          "label": "くつろぎのカタチ（すべて）"
+        },
+        {
+          "value": "ojyami",
+          "label": "くつろぎのカタチ おじゃみ"
+        },
+      ]
+    },
+    {
+      "type": "select",
+      "id": "gallery_mode",
+      "label": "表示形式",
+      "default": "gallery",
+      "options": [
+        {
+          "value": "gallery",
+          "label": "レンガ積み形式"
+        },
+        {
+          "value": "plain",
+          "label": "ギャラリー形式"
+        },
+      ]
+    }
   ]
 }
 {% endschema %}

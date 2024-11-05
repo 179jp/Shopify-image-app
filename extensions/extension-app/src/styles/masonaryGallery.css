@@ -1,5 +1,6 @@
 .masonryGalleryWrap {
   width: 100vw;
+  min-height: 400px;
   margin: 20px 0;
   overflow-x: scroll;
 }
