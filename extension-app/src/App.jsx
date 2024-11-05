@@ -40,7 +40,7 @@ function App({ mode, handle }) {
         // setImages(dammyImages);
         // setFilteredImages(dammyImages);
       } catch (error) {
-        console.error("Error fetching image settings:", error);
+        // console.error("Error fetching image settings:", error);
       }
     };
 
