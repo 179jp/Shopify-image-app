@@ -23,3 +23,16 @@
   display: flex;
   flex-wrap: nowrap;
 }
+
+.loadMore {
+  margin: 20px 0 0;
+  padding: 20px 0;
+  text-align: center;
+}
+.loadMore button {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 0.5em 3em;
+}
