@@ -57,7 +57,7 @@ const pageWrapStyle = {
 export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   // ファイルを取得する
-  const files = await readFiles({ admin, first: 250 });
+  const { files, filesPageInfo } = await readFiles({ admin, first: 250 });
 
   // コレクションを取得する
   const collections = await readCollections({ admin });
@@ -74,6 +74,7 @@ export const loader = async ({ request }) => {
   return json({
     collections,
     files,
+    filesPageInfo,
     images: imageSettings,
     patterns,
     products,
@@ -87,22 +88,39 @@ export const action = async ({ request }) => {
   console.log(method);
   if (
     method === "GET" ||
-    (method === "POST" && body.get("mode") === "filter")
+    (method === "POST" && body.get("mode") === "filter") ||
+    (method === "POST" && body.get("mode") === "loadNextFiles")
   ) {
-    console.log("- GET");
-    // URL から filter を取得する
-    const filterName = body.get("name");
-    const sortBy = body.get("sortBy") ? body.get("sortBy") : "first";
+    const mode = body.get("mode");
+    if (mode === "loadNextFiles") {
+      console.log("Load Next Files - GET");
+      const cursor = body.get("cursor");
+      const { admin } = await authenticate.admin(request);
+      // ファイルを取得する
+      const { files, filesPageInfo } = await readFiles({
+        admin,
+        first: 250,
+        after: cursor,
+      });
+      return json({
+        addFiles: files,
+        filesPageInfo,
+      });
+    } else {
+      // URL から filter を取得する
+      const filterName = body.get("name");
+      const sortBy = body.get("sortBy") ? body.get("sortBy") : "first";
 
-    const isSortReverse = sortBy === "last" ? true : false;
-    const filenameQuery = filterName ? `filename:${filterName}` : "";
-    const { admin } = await authenticate.admin(request);
-    // ファイルの検索
-    const files = await searchFiles({ admin, filenameQuery, isSortReverse });
+      const isSortReverse = sortBy === "last" ? true : false;
+      const filenameQuery = filterName ? `filename:${filterName}` : "";
+      const { admin } = await authenticate.admin(request);
+      // ファイルの検索
+      const files = await searchFiles({ admin, filenameQuery, isSortReverse });
 
-    return json({
-      files,
-    });
+      return json({
+        files,
+      });
+    }
   } else if (method === "POST") {
     console.log("Bulk Change - POST");
     const ids = JSON.parse(body.get("ids"));
@@ -226,7 +244,6 @@ export default function Index() {
       name: formData.get("name") || "",
       sortBy: formData.get("sortBy") || "",
     };
-
     // 更新されたクエリでリクエストを送信
     submit(newQuery, { method: "POST", action: "" });
   };
@@ -234,7 +251,11 @@ export default function Index() {
   const [gridSize, setGridSize] = useState("normal");
   // Data
   const { collections, tags, patterns, products } = useLoaderData();
-  const { files, images } = fetcher.data ?? useLoaderData();
+  const { files, filesPageInfo, images } = fetcher.data ?? useLoaderData();
+  const { addFiles } = fetcher.data ?? [];
+
+  const [displayFiles, setDisplayFiles] = useState([]);
+  const [isFileLoading, setIsFileLoading] = useState(true);
 
   // ファイルの選択
   const [selectedImages, setSelectedImages] = useState([]);
@@ -246,6 +267,27 @@ export default function Index() {
       return [...prev, fileId];
     });
   });
+
+  // 初回読み込み
+  useEffect(() => {
+    console.log("useEffect - files", files);
+    setDisplayFiles((prev) => {
+      if (files && files.length > 0) return files;
+      return prev;
+    });
+    setIsFileLoading((prev) => {
+      if (files && files.length > 0) return false;
+      return prev;
+    });
+  }, [files]);
+  // 追加読み込み
+  useEffect(() => {
+    console.log("useEffect - addFiles", addFiles);
+    setDisplayFiles((prev) => {
+      if (addFiles && addFiles.length > 0) return [...prev, ...addFiles];
+      return prev;
+    });
+  }, [addFiles]);
 
   // 一括操作
   const handleBulkChange = ({ products, collections, patterns, tags }) => {
@@ -325,11 +367,26 @@ export default function Index() {
             </ul>
           </fetcher.Form>
         </div>
-        <ImagesCards
-          files={files}
-          handleSelection={handleSelection}
-          grid={gridSize}
-        />
+        {!isFileLoading && (
+          <ImagesCards
+            files={displayFiles}
+            handleSelection={handleSelection}
+            grid={gridSize}
+          />
+        )}
+        {filesPageInfo && filesPageInfo.hasNextPage && (
+          <fetcher.Form method="POST">
+            <input type="hidden" name="mode" value="loadNextFiles" />
+            <input
+              type="hidden"
+              name="cursor"
+              value={filesPageInfo.endCursor}
+            />
+            <p className="loadMore">
+              <button type="submit">さらに読み込む</button>
+            </p>
+          </fetcher.Form>
+        )}
       </div>
       <BulkPanel
         selectedImages={selectedImages}

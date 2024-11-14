@@ -20,15 +20,22 @@ export const readFiles = async ({ admin, first, after = null }) => {
               }
             }
         }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
       }
     }
     `);
   const {
     data: {
-      files: { nodes },
+      files: { nodes, pageInfo },
     },
   } = await response.json();
-  return nodes;
+  return {
+    files: nodes,
+    filesPageInfo: pageInfo,
+  };
 };
 
 // ファイル検索
