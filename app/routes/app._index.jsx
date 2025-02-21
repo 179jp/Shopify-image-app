@@ -137,6 +137,17 @@ export const action = async ({ request }) => {
 
     // idごとに更新
     const upsertPromises = ids.map((id) => {
+      // 既存データがある場合、
+      // productIds,collections,patterns,tagsの値は
+      // 既存データにマージする
+      const prevData = imageSettings.find((image) => image.id === id);
+      if(prevData) {
+        productIds = productIds.concat(prevData.productIds);
+        collections = collections.concat(prevData.collections);
+        patterns = patterns.concat(prevData.patterns);
+        tags = tags.concat(prevData.tags);
+      }
+
       return upsertData({
         admin,
         data: {
