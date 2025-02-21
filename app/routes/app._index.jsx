@@ -326,7 +326,7 @@ export default function Index() {
       };
     }
     );
-    console.log(imagesData);
+    console.log(imagesData[0].tags);
     fetcher.submit(
       {
         ids: JSON.stringify(selectedImages),
