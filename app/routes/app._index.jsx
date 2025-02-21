@@ -344,6 +344,7 @@ export default function Index() {
                 <Icon source={SearchIcon} tone="base" />
                 <input type="text" name="name" placeholder="ファイル名" />
                 <button type="submit">検索</button>
+                version. 1.0.1
               </li>
               <li>
                 <p className="imageFilter_sub">
