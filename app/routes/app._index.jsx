@@ -141,24 +141,33 @@ export const action = async ({ request }) => {
       // productIds,collections,patterns,tagsの値は
       // 既存データにマージする
       const prevData = imageSettings.find((image) => image.id === id);
+      console.log("prevData", prevData);
       if(prevData) {
-        productIds = productIds.concat(prevData.productIds);
-        collections = collections.concat(prevData.collections);
-        patterns = patterns.concat(prevData.patterns);
-        tags = tags.concat(prevData.tags);
+        console.log("debug - test", patterns.concat(prevData.patterns));
+        return upsertData({
+          admin,
+          data: {
+            id,
+            productIds: productIds.concat(prevData.productIds),
+            productIdsOnImage,
+            collections: collections.concat(prevData.collections),
+            patterns: patterns.concat(prevData.patterns),
+            tags: tags.concat(prevData.tags),
+          },
+        });
+      } else {
+        return upsertData({
+          admin,
+          data: {
+            id,
+            productIds,
+            productIdsOnImage,
+            collections,
+            patterns,
+            tags,
+          },
+        });
       }
-
-      return upsertData({
-        admin,
-        data: {
-          id,
-          productIds,
-          productIdsOnImage,
-          collections,
-          patterns,
-          tags,
-        },
-      });
     });
     // 全て更新が完了したら API 書き出し
     const upsertResult = await Promise.all(upsertPromises).then((results) => {
