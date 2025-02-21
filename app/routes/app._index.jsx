@@ -142,7 +142,8 @@ export const action = async ({ request }) => {
       // 既存データがある場合、
       // productIds,collections,patterns,tagsの値は
       // 既存データにマージする
-      const prevData = images.find((image) => image.id === id);
+      const targetHandle = "image_" + id.replace("gid://shopify/MediaImage/", "");
+      const prevData = images.find((image) => image.id === targetHandle);
       console.log("prevData", prevData);
       if(prevData) {
         console.log("debug - test", patterns.concat(prevData.patterns));
