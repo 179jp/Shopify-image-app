@@ -136,6 +136,8 @@ export const action = async ({ request }) => {
 
     const { admin } = await authenticate.admin(request);
 
+    console.log("upsertPromises before:", images);
+
     // idごとに更新
     const upsertPromises = ids.map((id) => {
       console.log("upsertPromises:", id);
