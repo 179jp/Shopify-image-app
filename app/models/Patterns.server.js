@@ -3,7 +3,7 @@ import { json } from "stream/consumers";
 export const readPatterns = async ({ admin }) => {
   const response = await admin.graphql(`
     {
-      metaobjects(type: "pattern", first: 100) {
+      metaobjects(type: "pattern", first: 250) {
         edges {
           node {
             id
@@ -39,6 +39,72 @@ export const readPatterns = async ({ admin }) => {
       color: node.color.value,
       number: node.number.value,
       description: node.description.value,
+    };
+  });
+  return patterns;
+};
+
+export const readPatternsWithReferencedBy = async ({ admin }) => {
+  const response = await admin.graphql(`
+    {
+      metaobjects(type: "pattern", first: 250) {
+        edges {
+          node {
+            id
+            name: field(key: "name") {
+              value
+            }
+            kana: field(key: "kana") {
+              value
+            }
+            color: field(key: "color") {
+              value
+            }
+            number: field(key: "number") {
+              value
+            }
+            description: field(key: "description") {
+              value
+            }
+            image: field(key: "image") {
+              value
+            }
+            category: field(key: "category") {
+              value
+            }
+            referencedBy(first:250) {
+              edges {
+                node {
+                  referencer {
+                    __typename
+                    ... on Metaobject {
+                      id
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }`);
+  const {
+    data: {
+      metaobjects: { edges },
+    },
+  } = await response.json();
+  const patterns = edges.map(({ node }) => {
+    const referencedIds = node.referencedBy.edges.map(({ node }) => {
+      return node.referencer.id;
+    });
+    return {
+      id: node.id,
+      name: node.name.value,
+      kana: node.kana.value,
+      color: node.color.value,
+      number: node.number.value,
+      description: node.description.value,
+      referencedIds,
     };
   });
   return patterns;

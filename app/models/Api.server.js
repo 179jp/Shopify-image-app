@@ -6,13 +6,6 @@ import { json } from "@remix-run/node";
 import { readImageSettingsWithReference } from "./ImageSetting.server";
 import { readTagsWithReferencedBy } from "./Tags.server";
 
-const makeApiData = ({ data, tags }) => {
-  const apiData = {};
-  tags.forEach(({ id, handle, name }) => {
-    apiData[tag.handle] = [];
-  });
-};
-
 export const publishApi = async ({ admin, imageSetting }) => {
   // データを取得
   const data = await readImageSettingsWithReference({ admin });
