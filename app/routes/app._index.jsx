@@ -129,6 +129,7 @@ export const action = async ({ request }) => {
     const collections = body.get("collections");
     const patterns = body.get("patterns");
     const tags = body.get("tags");
+    const images = JSON.parse(body.get("images"));
 
     if (!ids && ids.length === 0)
       return json({ message: "No files selected" }, { status: 400 });
@@ -322,6 +323,7 @@ export default function Index() {
           collections.length > 0 ? JSON.stringify(collections) : null,
         patterns: patterns.length > 0 ? JSON.stringify(patterns) : null,
         tags: tags.length > 0 ? JSON.stringify(tags) : null,
+        images: JSON.stringify(images.filter((image) => selectedImages.includes(image.id))),
       },
       {
         method: "POST",
