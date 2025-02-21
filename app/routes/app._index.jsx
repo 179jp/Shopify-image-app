@@ -146,7 +146,7 @@ export const action = async ({ request }) => {
       // 既存データにマージする
       let targetHandle = id;
       targetHandle = "image_" + targetHandle.replace("gid://shopify/MediaImage/", "");
-      const prevData = images.find((image) => image.id === targetHandle);
+      const prevData = images.find((image) => image.id === targetHandle).value;
       console.log("prevData", prevData);
       if(prevData) {
         console.log("debug - test", patterns.concat(prevData.patterns));
@@ -320,7 +320,10 @@ export default function Index() {
     console.log("Bulk Change");
     const imagesData = selectedImages.map((id) => {
       const formattedId = "image_" + id.replace("gid://shopify/MediaImage/", "");
-      return images.find((image) => image.id === formattedId);
+      return {
+        id: formattedId,
+        value: images.find((image) => image.id === formattedId),
+      };
     }
     );
     console.log(imagesData);
