@@ -332,7 +332,7 @@ export default function Index() {
     <Page
       fullWidth
       title="Images"
-      subtitle="ファイルに登録されている内容が表示されます"
+      subtitle="ファイルに登録されている内容が表示されます / version. 1.0.1"
       compactTitle
     >
       <div style={pageWrapStyle}>
@@ -344,7 +344,6 @@ export default function Index() {
                 <Icon source={SearchIcon} tone="base" />
                 <input type="text" name="name" placeholder="ファイル名" />
                 <button type="submit">検索</button>
-                version. 1.0.1
               </li>
               <li>
                 <p className="imageFilter_sub">
