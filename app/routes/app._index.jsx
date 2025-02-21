@@ -137,10 +137,11 @@ export const action = async ({ request }) => {
 
     // idごとに更新
     const upsertPromises = ids.map((id) => {
+      console.log("upsertPromises:", id);
       // 既存データがある場合、
       // productIds,collections,patterns,tagsの値は
       // 既存データにマージする
-      const prevData = imageSettings.find((image) => image.id === id);
+      const prevData = images.find((image) => image.id === id);
       console.log("prevData", prevData);
       if(prevData) {
         console.log("debug - test", patterns.concat(prevData.patterns));
