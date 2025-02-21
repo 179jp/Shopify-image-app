@@ -315,6 +315,11 @@ export default function Index() {
   // 一括操作
   const handleBulkChange = ({ products, collections, patterns, tags }) => {
     console.log("Bulk Change");
+    const imagesData = selectedImages.map((id) => {
+      const formattedId = "image_" + id.replace("gid://shopify/MediaImage/", "");
+      return images.find((image) => image.id === formattedId);
+    }
+    );
     fetcher.submit(
       {
         ids: JSON.stringify(selectedImages),
@@ -324,7 +329,7 @@ export default function Index() {
           collections.length > 0 ? JSON.stringify(collections) : null,
         patterns: patterns.length > 0 ? JSON.stringify(patterns) : null,
         tags: tags.length > 0 ? JSON.stringify(tags) : null,
-        images: JSON.stringify(images.filter((image) => selectedImages.includes(image.id))),
+        images: JSON.stringify(imagesData),
       },
       {
         method: "POST",
