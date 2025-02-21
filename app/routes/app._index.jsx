@@ -320,13 +320,15 @@ export default function Index() {
     console.log("Bulk Change");
     const imagesData = selectedImages.map((id) => {
       const formattedId = "image_" + id.replace("gid://shopify/MediaImage/", "");
+      const data = images.find((image) => image.id === formattedId);
+      console.log(formattedId, data.tags);
       return {
         id: formattedId,
-        value: images.find((image) => image.id === formattedId),
+        value: data,
       };
     }
     );
-    console.log(imagesData[0].tags);
+    
     fetcher.submit(
       {
         ids: JSON.stringify(selectedImages),
