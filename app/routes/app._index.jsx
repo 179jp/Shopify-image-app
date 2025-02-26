@@ -316,7 +316,7 @@ export default function Index() {
   }, [addFiles]);
 
   // 一括操作
-  const handleBulkChange = ({ products, collections, patterns, tags }) => {
+  const handleBulkChange = ({ images, products, collections, patterns, tags }) => {
     console.log("Bulk Change");
     const imagesData = selectedImages.map((id) => {
       const formattedId = "image_" + id.replace("gid://shopify/MediaImage/", "");
@@ -326,8 +326,7 @@ export default function Index() {
         id: formattedId,
         value: data,
       };
-    }
-    );
+    });
     
     fetcher.submit(
       {
@@ -427,6 +426,7 @@ export default function Index() {
         )}
       </div>
       <BulkPanel
+        images={images}
         selectedImages={selectedImages}
         collections={collections}
         patterns={patterns}

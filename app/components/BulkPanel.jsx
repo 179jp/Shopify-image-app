@@ -19,6 +19,7 @@ const iconStyle = {
 };
 
 export const BulkPanel = ({
+  images,
   selectedImages,
   collections,
   patterns,
@@ -99,6 +100,7 @@ export const BulkPanel = ({
       return;
     }
     handleBulkChange({
+      images: images,
       products: selectedProducts,
       collections: selectedCollections,
       patterns: selectedPatterns,
