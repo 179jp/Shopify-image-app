@@ -321,7 +321,6 @@ export default function Index() {
     const imagesData = selectedImages.map((id) => {
       const formattedId = "image_" + id.replace("gid://shopify/MediaImage/", "");
       const data = images.find((image) => image.id === formattedId);
-      console.log(formattedId, data.tags);
       return {
         id: formattedId,
         value: data,
